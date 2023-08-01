@@ -200,21 +200,39 @@ class CurrencyConverterService {
       final DateTime savedTimestamp = DateTime.fromMillisecondsSinceEpoch(
           savedApiResponse.timestamp * 1000);
 
-      final int daysDifference =
-          DateTime.now().difference(savedTimestamp).inDays;
+      // Check if the saved date is the 1st day of the month
+      if (savedTimestamp.day == 1) {
+        // If it is, update the rates by fetching new data from API
+        newApiResponse = await fetchFromApi();
+        if (newApiResponse != null) {
+          await prefs.setString(
+              "lastSavedApiResponse", json.encode(newApiResponse.toJson()));
+          return getRatesFromResponse(newApiResponse); // Return new data
+        }
+      } else {
+        // Check the difference in days between the current date and the 1st day of the next month
+        final DateTime nextMonthFirstDay =
+            DateTime(savedTimestamp.year, savedTimestamp.month + 1, 1);
+        final int daysDifference =
+            nextMonthFirstDay.difference(DateTime.now()).inDays;
 
-      if (daysDifference <= 30) {
-        return getRatesFromResponse(savedApiResponse);
+        if (daysDifference <= 0) {
+          // If the difference is zero or negative, it means we passed the 1st day of the next month
+          // So, update the rates by fetching new data from API
+          newApiResponse = await fetchFromApi();
+          if (newApiResponse != null) {
+            await prefs.setString(
+                "lastSavedApiResponse", json.encode(newApiResponse.toJson()));
+            return getRatesFromResponse(newApiResponse); // Return new data
+          }
+        }
       }
+
+      // If the rates are not updated, use the saved rates
+      return getRatesFromResponse(savedApiResponse);
     }
 
-    newApiResponse = await fetchFromApi(); // Fetch new data from API
-
-    if (newApiResponse != null) {
-      return getRatesFromResponse(newApiResponse); // Return new data
-    }
-
-    // If fetching from API failed or no valid saved data, use default staticApiResponse
+    // If no saved data, use default staticApiResponse
     return getRatesFromResponse(ExchangeRatesModel.fromJson(staticApiResponse));
   }
 
@@ -248,8 +266,8 @@ class CurrencyConverterService {
     return exchangeRates;
   }
 
-  //RETURN TIMESTAMP OF SAVED EXCHANGE RATES
-  Future<String> getSavedRatesLastUpdateDuration() async {
+// RETURN DURATION UNTIL NEXT UPDATE
+  Future<String> getNextUpdateDuration() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ExchangeRatesModel savedExchangeRates;
     if (prefs.getString("lastSavedApiResponse") != null) {
@@ -263,17 +281,25 @@ class CurrencyConverterService {
     int timestamp = savedExchangeRates.timestamp;
     DateTime lastUpdated =
         DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+
+    final DateTime nextUpdateDate =
+        DateTime(lastUpdated.year, lastUpdated.month + 1, 1);
     DateTime now = DateTime.now();
 
-    Duration difference = now.difference(lastUpdated);
-    if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
-    } else {
+    if (now.day == 1 && now.month != lastUpdated.month) {
+      // If it's already the 1st day of a new month, return 'Just Now'
       return 'Just Now';
+    }
+
+    Duration difference = nextUpdateDate.difference(now);
+
+    if (difference.inDays >= 0) {
+      return 'Next update in ${difference.inDays} day${difference.inDays == 1 ? '' : 's'}';
+    } else {
+      // If we already passed the next update date, calculate the days until the next month's 1st day
+      final DateTime nextMonthFirstDay = DateTime(now.year, now.month + 1, 1);
+      Duration nextMonthDifference = nextMonthFirstDay.difference(now);
+      return 'Next update in ${nextMonthDifference.inDays} day${nextMonthDifference.inDays == 1 ? '' : 's'}';
     }
   }
 }

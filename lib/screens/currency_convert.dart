@@ -188,13 +188,13 @@ class _CurrencyConvertState extends State<CurrencyConvert> {
             height: 20,
           ),
           const Text(
-            '(Rates) Last Updated - ',
+            '(Rates)',
             textAlign: TextAlign.center,
             style: TextStyle(
                 color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w100),
           ),
           FutureBuilder<String?>(
-            future: _currencyConvertService.getSavedRatesLastUpdateDuration(),
+            future: _currencyConvertService.getNextUpdateDuration(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 // If the future is still waiting, display a loading indicator or some placeholder text

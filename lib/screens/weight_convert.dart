@@ -9,13 +9,20 @@ class WeightConvert extends StatefulWidget {
   State<WeightConvert> createState() => _WeightConvertState();
 }
 
-const List<String> list = <String>['Mg', 'Gm', 'Kg', 'Ton'];
+const List<String> list = <String>['Mg', 'G', 'Kg', 'Tonne'];
 const List<String> listFullName = <String>[
   'Milligram (Mg)',
-  'Gram (Gm)',
+  'Gram (G)',
   'Kilogram (Kg)',
-  'Tonne (Ton)'
+  'Tonne (Tonne)'
 ];
+
+const Map<String, Map<String, double>> conversionFactors = {
+  'Mg': {'G': 0.001, 'Kg': 0.000001, 'Tonne': 0.000000001, 'Mg': 1},
+  'G': {'Mg': 1000, 'Kg': 0.001, 'Tonne': 0.000001, 'G': 1},
+  'Kg': {'Mg': 1000000, 'G': 1000, 'Tonne': 0.001, 'Kg': 1},
+  'Tonne': {'Mg': 1000000000, 'G': 1000000, 'Kg': 1000, 'Tonne': 1},
+};
 
 final helper = Helper();
 
@@ -184,14 +191,16 @@ class _WeightConvertState extends State<WeightConvert> {
 
   void calculateY() {
     double? valueX = double.tryParse(mxController.text);
-    if (weightX != weightY && valueX != 0) {
-      double? convRate = getConvRate();
-      double? result = (valueX! * convRate).toDouble();
+    if (weightX != weightY && valueX != null) {
+      double? convFactor = conversionFactors[weightX]![weightY];
+      if (convFactor != null) {
+        double? result = (valueX * convFactor).toDouble();
 
-      if (result > 1e+9 || result < 1e-6) {
-        myController.text = result.toStringAsExponential(0);
-      } else {
-        myController.text = helper.formatDouble(result);
+        if (result > 1e+9 || result < 1e-6) {
+          myController.text = result.toStringAsExponential(0);
+        } else {
+          myController.text = helper.formatDouble(result);
+        }
       }
     } else {
       myController.text = mxController.text;
@@ -200,28 +209,19 @@ class _WeightConvertState extends State<WeightConvert> {
 
   void calculateX() {
     double? valueY = double.tryParse(myController.text);
-    if (weightX != weightY && valueY != 0) {
-      double? convRate = getConvRate();
-      double? result = (valueY! / convRate).toDouble();
+    if (weightX != weightY && valueY != null) {
+      double? convFactor = conversionFactors[weightY]![weightX];
+      if (convFactor != null) {
+        double? result = (valueY * convFactor).toDouble();
 
-      if (result > 1e+9 || result < 1e-6) {
-        mxController.text = result.toStringAsExponential(0);
-      } else {
-        mxController.text = helper.formatDouble(result);
+        if (result > 1e+9 || result < 1e-6) {
+          mxController.text = result.toStringAsExponential(0);
+        } else {
+          mxController.text = helper.formatDouble(result);
+        }
       }
     } else {
       mxController.text = myController.text;
     }
-  }
-
-  double getConvRate() {
-    int iWx = list.indexOf(weightX);
-    int iWy = list.indexOf(weightY);
-    int wDiff = iWx - iWy;
-    double convRate = 1000;
-    for (int i = 0; i < wDiff.abs() + 1; i++) {
-      wDiff < 0 ? (convRate /= 1000) : (convRate *= 1000);
-    }
-    return convRate;
   }
 }
