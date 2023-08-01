@@ -288,7 +288,7 @@ class CurrencyConverterService {
 
     if (now.day == 1 && now.month != lastUpdated.month) {
       // If it's already the 1st day of a new month, return 'Just Now'
-      return 'Just Now';
+      return 'Upated Just Now';
     }
 
     Duration difference = nextUpdateDate.difference(now);
