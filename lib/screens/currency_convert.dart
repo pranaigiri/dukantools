@@ -38,6 +38,14 @@ class _CurrencyConvertState extends State<CurrencyConvert> {
   }
 
   @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    caController.dispose();
+    cbController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(32),

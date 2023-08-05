@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gram_or_price/common/banner_ad.dart';
 import 'package:gram_or_price/common/helper.dart';
 
 class InterestCalculate extends StatefulWidget {
@@ -33,161 +34,172 @@ class _InterestCalculateState extends State<InterestCalculate> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        children: [
-          Text(
-            'Calculate Interest',
-            style: TextStyle(
-                color: Colors.grey.shade500,
-                fontSize: 24,
-                fontWeight: FontWeight.w300),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Radio(
-                value: InterestType.add,
-                groupValue: _interestType,
-                onChanged: (value) => setState(() {
-                  _interestType = value;
-                  calculateInterest();
-                }),
-              ),
-              const Text("Add"),
-              Radio(
-                value: InterestType.sub,
-                groupValue: _interestType,
-                onChanged: (value) => setState(() {
-                  _interestType = value;
-                  calculateInterest();
-                }),
-              ),
-              const Text("Subtract"),
-            ],
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Row(
-            children: [
-              Flexible(
-                child: TextFormField(
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                    signed: false,
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                children: [
+                  Text(
+                    'Calculate Interest',
+                    style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w300),
                   ),
-                  controller: amountController,
-                  decoration: const InputDecoration(
-                    hintText: "Amount",
-                    border: OutlineInputBorder(),
-                    labelText: 'Amount',
+                  const SizedBox(
+                    height: 10,
                   ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
-                  ],
-                  onChanged: (value) {
-                    if (value.isNotEmpty) {
-                      calculateInterest();
-                    } else {
-                      setState(() {
-                        amountController.clear();
-                      });
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              Flexible(
-                child: TextFormField(
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                    signed: false,
-                  ),
-                  controller: percentController,
-                  decoration: const InputDecoration(
-                    hintText: "Interest Rate (%)",
-                    border: OutlineInputBorder(),
-                    labelText: 'Interest Rate (%)',
-                  ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
-                  ],
-                  onChanged: (value) {
-                    if (value.isNotEmpty) {
-                      calculateInterest();
-                    } else {
-                      setState(() {
-                        percentController.clear();
-                      });
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-          Visibility(
-            visible: (amountController.text.isNotEmpty &&
-                percentController.text.isNotEmpty),
-            child: Column(
-              children: [
-                const SizedBox(
-                  height: 40,
-                ),
-                RichText(
-                  text: TextSpan(
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      TextSpan(
-                        text:
-                            '${_interestType == InterestType.add ? 'Adding' : 'Subtracting'} ',
-                        style: const TextStyle(color: Colors.grey),
+                      Radio(
+                        value: InterestType.add,
+                        groupValue: _interestType,
+                        onChanged: (value) => setState(() {
+                          _interestType = value;
+                          calculateInterest();
+                        }),
                       ),
-                      TextSpan(
-                        text: '${percentController.text}%',
-                        style: TextStyle(
-                            color: _interestType == InterestType.add
-                                ? Colors.green
-                                : Colors.red,
-                            fontWeight: FontWeight.bold),
+                      const Text("Add"),
+                      Radio(
+                        value: InterestType.sub,
+                        groupValue: _interestType,
+                        onChanged: (value) => setState(() {
+                          _interestType = value;
+                          calculateInterest();
+                        }),
                       ),
-                      TextSpan(
-                        text:
-                            ' ${_interestType == InterestType.add ? 'to' : 'from'} ${amountController.text} ',
-                        style: const TextStyle(color: Colors.grey),
+                      const Text("Subtract"),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: TextFormField(
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                            signed: false,
+                          ),
+                          controller: amountController,
+                          decoration: const InputDecoration(
+                            hintText: "Amount",
+                            border: OutlineInputBorder(),
+                            labelText: 'Amount',
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d+\.?\d{0,2}'))
+                          ],
+                          onChanged: (value) {
+                            if (value.isNotEmpty) {
+                              calculateInterest();
+                            } else {
+                              setState(() {
+                                amountController.clear();
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Flexible(
+                        child: TextFormField(
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                            signed: false,
+                          ),
+                          controller: percentController,
+                          decoration: const InputDecoration(
+                            hintText: "Interest Rate (%)",
+                            border: OutlineInputBorder(),
+                            labelText: 'Interest Rate (%)',
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d+\.?\d{0,2}'))
+                          ],
+                          onChanged: (value) {
+                            if (value.isNotEmpty) {
+                              calculateInterest();
+                            } else {
+                              setState(() {
+                                percentController.clear();
+                              });
+                            }
+                          },
+                        ),
                       ),
                     ],
                   ),
-                ),
-                Text(
-                  helper.formatDouble(calculatedAmount),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 32,
+                  Visibility(
+                    visible: (amountController.text.isNotEmpty &&
+                        percentController.text.isNotEmpty),
+                    child: Column(
+                      children: [
+                        const SizedBox(
+                          height: 40,
+                        ),
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text:
+                                    '${_interestType == InterestType.add ? 'Adding' : 'Subtracting'} ',
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                              TextSpan(
+                                text: '${percentController.text}%',
+                                style: TextStyle(
+                                    color: _interestType == InterestType.add
+                                        ? Colors.green
+                                        : Colors.red,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(
+                                text:
+                                    ' ${_interestType == InterestType.add ? 'to' : 'from'} ${amountController.text} ',
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          helper.formatDouble(calculatedAmount),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 32,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const Text("Interest Amount"),
+                        Text(
+                          helper.formatDouble(calculatedInterest),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 32,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const Text("Interest Amount"),
-                Text(
-                  helper.formatDouble(calculatedInterest),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 32,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+        const BannerAdWidget()
+      ],
     );
   }
 

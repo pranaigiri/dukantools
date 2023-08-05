@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:gram_or_price/data/item_data.dart';
 import 'package:gram_or_price/screens/about_us.dart';
 import 'package:gram_or_price/screens/item_details.dart';
@@ -7,6 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'models/item.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
+
   runApp(
     ChangeNotifierProvider<ThemeProvider>(
       create: (_) => ThemeProvider(),

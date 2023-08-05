@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gram_or_price/common/banner_ad.dart';
 
 class ComingSoon extends StatelessWidget {
   const ComingSoon({super.key});
@@ -6,13 +7,16 @@ class ComingSoon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          "More tools to be added soon...",
-          textAlign: TextAlign.center,
-        )
+        Expanded(
+          child: Center(
+            child: Text(
+              "More tools to be added soon...",
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        BannerAdWidget()
       ],
     );
   }
