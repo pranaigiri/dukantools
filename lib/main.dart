@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:gram_or_price/common/banner_ad.dart';
 import 'package:gram_or_price/data/item_data.dart';
 import 'package:gram_or_price/screens/about_us.dart';
 import 'package:gram_or_price/screens/item_details.dart';
@@ -128,120 +129,124 @@ class HomePageState extends State<HomePage> {
     }
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: Container(
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 4.0,
-                spreadRadius: 2.0,
-                offset: const Offset(0, 2),
-              ),
-            ],
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4.0,
+                  spreadRadius: 2.0,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: AppBar(
+              title: const Text('Dukan Tools'),
+              actions: [
+                IconButton(
+                  onPressed: () {
+                    themeProvider.toggleTheme(); // Use the toggleTheme function
+                  },
+                  icon: Icon(themeProvider.isDarkModeEnabled
+                      ? Icons.wb_sunny
+                      : Icons
+                          .nights_stay), // Use the theme state to determine the icon
+                ),
+              ],
+            ),
           ),
-          child: AppBar(
-            title: const Text('Dukan Tools'),
-            actions: [
-              IconButton(
-                onPressed: () {
-                  themeProvider.toggleTheme(); // Use the toggleTheme function
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(0),
+          child: GridView.builder(
+            padding: const EdgeInsets.all(20),
+            itemCount: items.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            ),
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/itemDetails',
+                    arguments: items[index],
+                  );
                 },
-                icon: Icon(themeProvider.isDarkModeEnabled
-                    ? Icons.wb_sunny
-                    : Icons
-                        .nights_stay), // Use the theme state to determine the icon
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: items[index].color,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        items[index].iconData,
+                        size: 65,
+                        color: Colors.white,
+                      ),
+                      Text(
+                        items[index].name,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              const SizedBox(
+                height: 20,
+              ),
+              Image.asset(
+                'lib/assets/icons/dukan_tools_logo_2.png',
+                width: 80,
+                height: 80,
+              ),
+              const Text(
+                "Dukan Tools",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 24),
+              ),
+              const Text(
+                "1.0.0",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              const Divider(
+                color: Colors.black12,
+                thickness: 0.5,
+              ),
+              ListTile(
+                title: const Text('About'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/about-us');
+                },
               ),
             ],
           ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(0),
-        child: GridView.builder(
-          padding: const EdgeInsets.all(20),
-          itemCount: items.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/itemDetails',
-                  arguments: items[index],
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: items[index].color,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      items[index].iconData,
-                      size: 65,
-                      color: Colors.white,
-                    ),
-                    Text(
-                      items[index].name,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.0,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            Image.asset(
-              'lib/assets/icons/dukan_tools_logo_2.png',
-              width: 80,
-              height: 80,
-            ),
-            const Text(
-              "Dukan Tools",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24),
-            ),
-            const Text(
-              "1.0.0",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            const Divider(
-              color: Colors.black12,
-              thickness: 0.5,
-            ),
-            ListTile(
-              title: const Text('About'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/about-us');
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+        bottomNavigationBar: SizedBox(
+          width: AdSize.banner.width.toDouble(),
+          height: AdSize.banner.height.toDouble(),
+          child: const BannerAdWidget(),
+        ));
   }
 }

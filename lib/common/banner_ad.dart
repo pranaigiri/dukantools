@@ -8,14 +8,15 @@ class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({super.key});
 
   @override
-  State<BannerAdWidget> createState() => _BannerAdWidgetState();
+  State<BannerAdWidget> createState() => BannerAdWidgetState();
 }
 
-class _BannerAdWidgetState extends State<BannerAdWidget> {
-  BannerAd? _admobBannerAd;
+class BannerAdWidgetState extends State<BannerAdWidget> {
+  BannerAd? admobBannerAd;
   Timer? _timer;
   DateTime? lastLoadedTimestamp;
-  int adExpTime = 10;
+  int adExpTime = 60;
+  bool isAdLoaded = false;
 
   @override
   void initState() {
@@ -37,7 +38,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       secDiff = DateTime.now().difference(cachedAdTimestamp).inSeconds;
     }
 
-    if ((_admobBannerAd == null && secDiff == null) ||
+    if ((admobBannerAd == null && secDiff == null) ||
         secDiff == null ||
         secDiff > adExpTime) {
       BannerAd(
@@ -47,7 +48,8 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
           listener: BannerAdListener(
             onAdLoaded: (ad) {
               setState(() {
-                _admobBannerAd = ad as BannerAd;
+                admobBannerAd = ad as BannerAd;
+                isAdLoaded = true;
               });
 
               //store the loaded time
@@ -85,7 +87,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   @override
   void dispose() {
-    _admobBannerAd?.dispose();
+    admobBannerAd?.dispose();
     _timer?.cancel();
     super.dispose();
   }
@@ -95,13 +97,13 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     return SafeArea(
       child: Stack(
         children: [
-          if (_admobBannerAd != null)
+          if (admobBannerAd != null)
             Align(
               alignment: Alignment.bottomCenter,
               child: SizedBox(
-                width: _admobBannerAd!.size.width.toDouble(),
-                height: _admobBannerAd!.size.height.toDouble(),
-                child: AdWidget(ad: _admobBannerAd!),
+                width: admobBannerAd!.size.width.toDouble(),
+                height: admobBannerAd!.size.height.toDouble(),
+                child: AdWidget(ad: admobBannerAd!),
               ),
             ),
         ],
