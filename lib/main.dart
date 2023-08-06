@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:gram_or_price/common/admob_helper.dart';
 import 'package:gram_or_price/common/banner_ad.dart';
 import 'package:gram_or_price/data/item_data.dart';
 import 'package:gram_or_price/screens/about_us.dart';
@@ -110,6 +111,54 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _createInterstitialAd();
+  }
+
+  InterstitialAd? _interstitialAd;
+  final int maxFailedLoadAttempts = 3;
+  int _interstitialLoadAttempts = 0;
+  bool interstitialAdShow = true;
+
+  void _createInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: AdMobHelper.interstitialUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (InterstitialAd ad) {
+          _interstitialAd = ad;
+          _interstitialLoadAttempts = 0;
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          _interstitialLoadAttempts += 1;
+          _interstitialAd = null;
+          if (_interstitialLoadAttempts <= maxFailedLoadAttempts) {
+            _createInterstitialAd();
+          }
+        },
+      ),
+    );
+  }
+
+  void _showInterstitialAd() {
+    if (_interstitialAd != null) {
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (InterstitialAd ad) {
+          ad.dispose();
+          _createInterstitialAd();
+        },
+        onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+          ad.dispose();
+          _createInterstitialAd();
+        },
+      );
+      _interstitialAd!.show();
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _interstitialAd?.dispose();
   }
 
   @override
@@ -171,6 +220,9 @@ class HomePageState extends State<HomePage> {
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () {
+                  interstitialAdShow = !interstitialAdShow;
+                  interstitialAdShow ? _showInterstitialAd() : null;
+
                   Navigator.pushNamed(
                     context,
                     '/itemDetails',
