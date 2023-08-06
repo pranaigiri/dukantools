@@ -15,7 +15,7 @@ class BannerAdWidgetState extends State<BannerAdWidget> {
   BannerAd? admobBannerAd;
   Timer? _timer;
   DateTime? lastLoadedTimestamp;
-  int adExpTime = 10;
+  int adExpTime = 60;
   bool isAdLoaded = false;
 
   @override

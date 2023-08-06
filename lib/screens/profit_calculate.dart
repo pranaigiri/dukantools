@@ -30,163 +30,149 @@ class _ProfitCalculateState extends State<ProfitCalculate> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                children: [
-                  Text(
-                    'Add Buy / Sell Price',
-                    style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w300),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: TextFormField(
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: false,
-                            signed: false,
-                          ),
-                          controller: buyController,
-                          decoration: const InputDecoration(
-                            hintText: "Buy Price",
-                            border: OutlineInputBorder(),
-                            labelText: 'Buy Price',
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d+\.?\d{0,2}'))
-                          ],
-                          onChanged: (value) {
-                            if (value.isNotEmpty) {
-                              calculateBuySell();
-                            } else {
-                              setState(() {
-                                // afterOff = 0;
-                                // remAmount = 0;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Flexible(
-                        child: TextFormField(
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: false,
-                            signed: false,
-                          ),
-                          controller: sellController,
-                          decoration: const InputDecoration(
-                            hintText: "Sell Price",
-                            border: OutlineInputBorder(),
-                            labelText: 'Sell Price',
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d+\.?\d{0,2}'))
-                          ],
-                          onChanged: (value) {
-                            if (value.isNotEmpty) {
-                              calculateBuySell();
-                            } else {
-                              setState(() {
-                                // afterOff = 0;
-                                // remAmount = 0;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  TextFormField(
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: false,
-                      signed: false,
-                    ),
-                    controller: qtyController,
-                    decoration: const InputDecoration(
-                      hintText: "Qty (Optional)",
-                      border: OutlineInputBorder(),
-                      labelText: 'Qty (Optional)',
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d+\.?\d{0,2}'))
-                    ],
-                    onChanged: (value) {
-                      if (value.isNotEmpty) {
-                        calculateBuySell();
-                      } else {
-                        setState(() {
-                          // afterOff = 0;
-                          // remAmount = 0;
-                        });
-                      }
-                    },
-                  ),
-                  Visibility(
-                    visible: buyController.text.isNotEmpty &&
-                        sellController.text.isNotEmpty,
-                    child: Column(
-                      children: [
-                        const SizedBox(
-                          height: 40,
-                        ),
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              const TextSpan(
-                                text: 'You have ',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                              TextSpan(
-                                text: '20%',
-                                style: TextStyle(
-                                    color: yourProfit < 0
-                                        ? Colors.red
-                                        : Colors.green,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              TextSpan(
-                                text:
-                                    ' of ${yourProfit < 0 ? "Loss" : "Profit"}',
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          helper.formatDouble(yourProfit),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 32,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        children: [
+          Text(
+            'Add Buy / Sell Price',
+            style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 24,
+                fontWeight: FontWeight.w300),
           ),
-        ),
-      ],
+          const SizedBox(
+            height: 10,
+          ),
+          Row(
+            children: [
+              Flexible(
+                child: TextFormField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false,
+                    signed: false,
+                  ),
+                  controller: buyController,
+                  decoration: const InputDecoration(
+                    hintText: "Buy Price",
+                    border: OutlineInputBorder(),
+                    labelText: 'Buy Price',
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+                  ],
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      calculateBuySell();
+                    } else {
+                      setState(() {
+                        // afterOff = 0;
+                        // remAmount = 0;
+                      });
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Flexible(
+                child: TextFormField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false,
+                    signed: false,
+                  ),
+                  controller: sellController,
+                  decoration: const InputDecoration(
+                    hintText: "Sell Price",
+                    border: OutlineInputBorder(),
+                    labelText: 'Sell Price',
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+                  ],
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      calculateBuySell();
+                    } else {
+                      setState(() {
+                        // afterOff = 0;
+                        // remAmount = 0;
+                      });
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          TextFormField(
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: false,
+              signed: false,
+            ),
+            controller: qtyController,
+            decoration: const InputDecoration(
+              hintText: "Qty (Optional)",
+              border: OutlineInputBorder(),
+              labelText: 'Qty (Optional)',
+            ),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+            ],
+            onChanged: (value) {
+              if (value.isNotEmpty) {
+                calculateBuySell();
+              } else {
+                setState(() {
+                  // afterOff = 0;
+                  // remAmount = 0;
+                });
+              }
+            },
+          ),
+          Visibility(
+            visible:
+                buyController.text.isNotEmpty && sellController.text.isNotEmpty,
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 40,
+                ),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      const TextSpan(
+                        text: 'You have ',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      TextSpan(
+                        text: '20%',
+                        style: TextStyle(
+                            color: yourProfit < 0 ? Colors.red : Colors.green,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(
+                        text: ' of ${yourProfit < 0 ? "Loss" : "Profit"}',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  helper.formatDouble(yourProfit),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 

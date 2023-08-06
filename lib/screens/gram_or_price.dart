@@ -35,16 +35,108 @@ class _GramOrPriceState extends State<GramOrPrice> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(32.0),
+    return Padding(
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        children: [
+          Text(
+            'Item Details',
+            style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 24,
+                fontWeight: FontWeight.w300),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Row(
+            children: [
+              Flexible(
+                child: TextFormField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false,
+                    signed: false,
+                  ),
+                  controller: itemPriceController,
+                  decoration: const InputDecoration(
+                    hintText: "Item Price",
+                    border: OutlineInputBorder(),
+                    labelText: 'Item Price',
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+                  ],
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      selectedPrice = double.tryParse(value);
+                      calculateGram();
+                    } else {
+                      setState(() {
+                        itemCalculatedPriceController.clear();
+                        itemCalculatedGramController.clear();
+                      });
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Flexible(
+                child: TextFormField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false,
+                    signed: false,
+                  ),
+                  controller: itemGramController,
+                  decoration: const InputDecoration(
+                    hintText: "Gram (GM)",
+                    border: OutlineInputBorder(),
+                    labelText: 'Gram (GM)',
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+                  ],
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      selectedGram = double.tryParse(value);
+                      calculatePrice();
+                    } else {
+                      setState(() {
+                        itemCalculatedPriceController.clear();
+                        itemCalculatedGramController.clear();
+                      });
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 40,
+          ),
+          Visibility(
+              visible: itemPriceController.text.isNotEmpty &&
+                  itemGramController.text.isNotEmpty,
               child: Column(
                 children: [
+                  Column(
+                    children: [
+                      const Text('Price per Gram(GM) : '),
+                      Text(
+                        _helper.formatDouble(pricePerGram),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 32,
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
                   Text(
-                    'Item Details',
+                    'Calculate',
                     style: TextStyle(
                         color: Colors.grey.shade500,
                         fontSize: 24,
@@ -61,31 +153,33 @@ class _GramOrPriceState extends State<GramOrPrice> {
                             decimal: false,
                             signed: false,
                           ),
-                          controller: itemPriceController,
+                          controller: itemCalculatedPriceController,
                           decoration: const InputDecoration(
-                            hintText: "Item Price",
+                            hintText: "Calc. Price",
                             border: OutlineInputBorder(),
-                            labelText: 'Item Price',
+                            labelText: 'Calc. Price',
                           ),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                                 RegExp(r'^\d+\.?\d{0,2}'))
                           ],
                           onChanged: (value) {
+                            if (value.isEmpty) {
+                              itemCalculatedGramController.clear();
+                            }
                             if (value.isNotEmpty) {
-                              selectedPrice = double.tryParse(value);
+                              calculatedPrice = double.tryParse(value);
                               calculateGram();
-                            } else {
-                              setState(() {
-                                itemCalculatedPriceController.clear();
-                                itemCalculatedGramController.clear();
-                              });
                             }
                           },
                         ),
                       ),
                       const SizedBox(
-                        width: 10,
+                        child: Icon(
+                          Icons.multiple_stop_sharp,
+                          color: Colors.orange,
+                          size: 40,
+                        ),
                       ),
                       Flexible(
                         child: TextFormField(
@@ -93,139 +187,33 @@ class _GramOrPriceState extends State<GramOrPrice> {
                             decimal: false,
                             signed: false,
                           ),
-                          controller: itemGramController,
+                          controller: itemCalculatedGramController,
                           decoration: const InputDecoration(
-                            hintText: "Gram (GM)",
+                            hintText: "Calc. Gram (GM)",
                             border: OutlineInputBorder(),
-                            labelText: 'Gram (GM)',
+                            labelText: 'Calc. Gram (GM)',
                           ),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                                 RegExp(r'^\d+\.?\d{0,2}'))
                           ],
                           onChanged: (value) {
+                            if (value.isEmpty) {
+                              itemCalculatedPriceController.clear();
+                            }
                             if (value.isNotEmpty) {
-                              selectedGram = double.tryParse(value);
+                              calculatedGram = double.tryParse(value);
                               calculatePrice();
-                            } else {
-                              setState(() {
-                                itemCalculatedPriceController.clear();
-                                itemCalculatedGramController.clear();
-                              });
                             }
                           },
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(
-                    height: 40,
-                  ),
-                  Visibility(
-                      visible: itemPriceController.text.isNotEmpty &&
-                          itemGramController.text.isNotEmpty,
-                      child: Column(
-                        children: [
-                          Column(
-                            children: [
-                              const Text('Price per Gram(GM) : '),
-                              Text(
-                                _helper.formatDouble(pricePerGram),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 32,
-                                ),
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Text(
-                            'Calculate',
-                            style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w300),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: TextFormField(
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                    decimal: false,
-                                    signed: false,
-                                  ),
-                                  controller: itemCalculatedPriceController,
-                                  decoration: const InputDecoration(
-                                    hintText: "Calc. Price",
-                                    border: OutlineInputBorder(),
-                                    labelText: 'Calc. Price',
-                                  ),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d+\.?\d{0,2}'))
-                                  ],
-                                  onChanged: (value) {
-                                    if (value.isEmpty) {
-                                      itemCalculatedGramController.clear();
-                                    }
-                                    if (value.isNotEmpty) {
-                                      calculatedPrice = double.tryParse(value);
-                                      calculateGram();
-                                    }
-                                  },
-                                ),
-                              ),
-                              const SizedBox(
-                                child: Icon(
-                                  Icons.multiple_stop_sharp,
-                                  color: Colors.orange,
-                                  size: 40,
-                                ),
-                              ),
-                              Flexible(
-                                child: TextFormField(
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                    decimal: false,
-                                    signed: false,
-                                  ),
-                                  controller: itemCalculatedGramController,
-                                  decoration: const InputDecoration(
-                                    hintText: "Calc. Gram (GM)",
-                                    border: OutlineInputBorder(),
-                                    labelText: 'Calc. Gram (GM)',
-                                  ),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d+\.?\d{0,2}'))
-                                  ],
-                                  onChanged: (value) {
-                                    if (value.isEmpty) {
-                                      itemCalculatedPriceController.clear();
-                                    }
-                                    if (value.isNotEmpty) {
-                                      calculatedGram = double.tryParse(value);
-                                      calculatePrice();
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ))
                 ],
-              ),
-            ),
-          ),
-        ),
-      ],
+              ))
+        ],
+      ),
     );
   }
 

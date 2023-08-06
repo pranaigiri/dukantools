@@ -30,145 +30,134 @@ class _PercentageDiscountState extends State<PercentageDiscount> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Column(
-                children: [
-                  Text(
-                    'Calculate Discount',
-                    style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w300),
+    return Padding(
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        children: [
+          Text(
+            'Calculate Discount',
+            style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 24,
+                fontWeight: FontWeight.w300),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Row(
+            children: [
+              Flexible(
+                child: TextFormField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false,
+                    signed: false,
                   ),
-                  const SizedBox(
-                    height: 10,
+                  controller: _amountController,
+                  decoration: const InputDecoration(
+                    hintText: "Amount",
+                    border: OutlineInputBorder(),
+                    labelText: 'Amount',
                   ),
-                  Row(
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+                  ],
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      calculatePercentage();
+                    } else {
+                      setState(() {
+                        afterOff = 0;
+                        remAmount = 0;
+                      });
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Flexible(
+                child: TextFormField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false,
+                    signed: false,
+                  ),
+                  controller: _percentController,
+                  decoration: const InputDecoration(
+                    hintText: "Percent (%)",
+                    border: OutlineInputBorder(),
+                    labelText: 'Percent (%)',
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+                  ],
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      calculatePercentage();
+                    } else {
+                      setState(() {
+                        afterOff = 0;
+                        remAmount = 0;
+                      });
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 40,
+          ),
+          Visibility(
+            visible: _amountController.text.isNotEmpty &&
+                _percentController.text.isNotEmpty,
+            child: Column(
+              children: [
+                RichText(
+                  text: TextSpan(
                     children: [
-                      Flexible(
-                        child: TextFormField(
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: false,
-                            signed: false,
-                          ),
-                          controller: _amountController,
-                          decoration: const InputDecoration(
-                            hintText: "Amount",
-                            border: OutlineInputBorder(),
-                            labelText: 'Amount',
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d+\.?\d{0,2}'))
-                          ],
-                          onChanged: (value) {
-                            if (value.isNotEmpty) {
-                              calculatePercentage();
-                            } else {
-                              setState(() {
-                                afterOff = 0;
-                                remAmount = 0;
-                              });
-                            }
-                          },
-                        ),
+                      const TextSpan(
+                        text: 'After ',
+                        style: TextStyle(color: Colors.grey),
                       ),
-                      const SizedBox(
-                        width: 10,
+                      TextSpan(
+                        text: '${_percentController.text}%',
+                        style: const TextStyle(
+                            color: Colors.amber, fontWeight: FontWeight.bold),
                       ),
-                      Flexible(
-                        child: TextFormField(
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: false,
-                            signed: false,
-                          ),
-                          controller: _percentController,
-                          decoration: const InputDecoration(
-                            hintText: "Percent (%)",
-                            border: OutlineInputBorder(),
-                            labelText: 'Percent (%)',
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d+\.?\d{0,2}'))
-                          ],
-                          onChanged: (value) {
-                            if (value.isNotEmpty) {
-                              calculatePercentage();
-                            } else {
-                              setState(() {
-                                afterOff = 0;
-                                remAmount = 0;
-                              });
-                            }
-                          },
-                        ),
+                      const TextSpan(
+                        text: ' discount',
+                        style: TextStyle(color: Colors.grey),
                       ),
                     ],
                   ),
-                  const SizedBox(
-                    height: 40,
+                ),
+                Text(
+                  helper.formatDouble(remAmount),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
                   ),
-                  Visibility(
-                    visible: _amountController.text.isNotEmpty &&
-                        _percentController.text.isNotEmpty,
-                    child: Column(
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              const TextSpan(
-                                text: 'After ',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                              TextSpan(
-                                text: '${_percentController.text}%',
-                                style: const TextStyle(
-                                    color: Colors.amber,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              const TextSpan(
-                                text: ' discount',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          helper.formatDouble(remAmount),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 32,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Text('Remaining'),
-                        Text(
-                          helper.formatDouble(afterOff),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 32,
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                const Text('Remaining'),
+                Text(
+                  helper.formatDouble(afterOff),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
                   ),
-                  const SizedBox(
-                    height: 40,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          const SizedBox(
+            height: 40,
+          ),
+        ],
+      ),
     );
   }
 

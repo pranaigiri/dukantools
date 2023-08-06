@@ -44,159 +44,149 @@ class _WeightConvertState extends State<WeightConvert> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Weight Converter',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w300),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    children: [
-                      Flexible(
-                        flex: 2,
-                        child: TextFormField(
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: false,
-                            signed: false,
-                          ),
-                          controller: mxController,
-                          decoration: InputDecoration(
-                            hintText: listFullName[list.indexOf(weightX)],
-                            border: const OutlineInputBorder(),
-                            labelText: listFullName[list.indexOf(weightX)],
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d+\.?\d{0,10}'))
-                          ],
-                          onChanged: (value) {
-                            if (value.isNotEmpty) {
-                              calculateY();
-                            } else {
-                              myController.clear();
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Flexible(
-                        flex: 1,
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: weightX,
-                          elevation: 16,
-                          onChanged: (String? value) {
-                            // This is called when the user selects an item.
-                            setState(() {
-                              weightX = value!;
-                            });
-                            if (mxController.text.isNotEmpty) {
-                              calculateY();
-                            }
-                          },
-                          items: list
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    children: [
-                      Flexible(
-                        flex: 2,
-                        child: TextFormField(
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: false,
-                            signed: false,
-                          ),
-                          controller: myController,
-                          decoration: InputDecoration(
-                            hintText: listFullName[list.indexOf(weightY)],
-                            border: const OutlineInputBorder(),
-                            labelText: listFullName[list.indexOf(weightY)],
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d+\.?\d{0,10}'))
-                          ],
-                          onChanged: (value) {
-                            if (value.isNotEmpty) {
-                              calculateX();
-                            } else {
-                              mxController.clear();
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Flexible(
-                        flex: 1,
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: weightY,
-                          elevation: 16,
-                          onChanged: (String? value) {
-                            // This is called when the user selects an item.
-                            setState(() {
-                              weightY = value!;
-                            });
-                            if (myController.text.isNotEmpty) {
-                              calculateX();
-                            }
-                          },
-                          items: list
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  const Text(
-                    '1e+10 means 10 0\'s after 1, That is 10000000000. There could be any number in place of 10.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
-                  )
-                ],
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Weight Converter',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 24,
+                fontWeight: FontWeight.w300),
           ),
-        ),
-      ],
+          const SizedBox(
+            height: 20,
+          ),
+          Row(
+            children: [
+              Flexible(
+                flex: 2,
+                child: TextFormField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false,
+                    signed: false,
+                  ),
+                  controller: mxController,
+                  decoration: InputDecoration(
+                    hintText: listFullName[list.indexOf(weightX)],
+                    border: const OutlineInputBorder(),
+                    labelText: listFullName[list.indexOf(weightX)],
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,10}'))
+                  ],
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      calculateY();
+                    } else {
+                      myController.clear();
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Flexible(
+                flex: 1,
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: weightX,
+                  elevation: 16,
+                  onChanged: (String? value) {
+                    // This is called when the user selects an item.
+                    setState(() {
+                      weightX = value!;
+                    });
+                    if (mxController.text.isNotEmpty) {
+                      calculateY();
+                    }
+                  },
+                  items: list.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Row(
+            children: [
+              Flexible(
+                flex: 2,
+                child: TextFormField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false,
+                    signed: false,
+                  ),
+                  controller: myController,
+                  decoration: InputDecoration(
+                    hintText: listFullName[list.indexOf(weightY)],
+                    border: const OutlineInputBorder(),
+                    labelText: listFullName[list.indexOf(weightY)],
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,10}'))
+                  ],
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      calculateX();
+                    } else {
+                      mxController.clear();
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Flexible(
+                flex: 1,
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: weightY,
+                  elevation: 16,
+                  onChanged: (String? value) {
+                    // This is called when the user selects an item.
+                    setState(() {
+                      weightY = value!;
+                    });
+                    if (myController.text.isNotEmpty) {
+                      calculateX();
+                    }
+                  },
+                  items: list.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          const Text(
+            '1e+10 means 10 0\'s after 1, That is 10000000000. There could be any number in place of 10.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey),
+          )
+        ],
+      ),
     );
   }
 

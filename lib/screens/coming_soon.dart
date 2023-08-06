@@ -6,17 +6,11 @@ class ComingSoon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        Expanded(
-          child: Center(
-            child: Text(
-              "More tools to be added soon...",
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-      ],
+    return const Center(
+      child: Text(
+        "More tools to be added soon...",
+        textAlign: TextAlign.center,
+      ),
     );
   }
 }

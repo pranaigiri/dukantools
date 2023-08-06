@@ -34,8 +34,14 @@ class ItemDetails extends StatelessWidget {
               ),
             ).titleLarge,
           ),
-          body: Container(
-            child: currentWidget,
+          body: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: currentWidget,
+                ),
+              ),
+            ],
           ),
           bottomNavigationBar: const BannerAdWidget(),
         );
