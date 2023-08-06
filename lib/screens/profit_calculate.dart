@@ -186,7 +186,6 @@ class _ProfitCalculateState extends State<ProfitCalculate> {
             ),
           ),
         ),
-        const BannerAdWidget()
       ],
     );
   }

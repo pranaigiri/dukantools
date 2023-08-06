@@ -198,7 +198,6 @@ class _InterestCalculateState extends State<InterestCalculate> {
             ),
           ),
         ),
-        const BannerAdWidget()
       ],
     );
   }

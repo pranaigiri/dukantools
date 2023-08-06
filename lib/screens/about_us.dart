@@ -36,7 +36,6 @@ class AboutUs extends StatelessWidget {
               )),
             ),
           ),
-          BannerAdWidget()
         ],
       ),
     );

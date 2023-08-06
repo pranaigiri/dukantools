@@ -15,7 +15,7 @@ class BannerAdWidgetState extends State<BannerAdWidget> {
   BannerAd? admobBannerAd;
   Timer? _timer;
   DateTime? lastLoadedTimestamp;
-  int adExpTime = 60;
+  int adExpTime = 10;
   bool isAdLoaded = false;
 
   @override
@@ -94,20 +94,16 @@ class BannerAdWidgetState extends State<BannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Stack(
-        children: [
-          if (admobBannerAd != null)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                width: admobBannerAd!.size.width.toDouble(),
-                height: admobBannerAd!.size.height.toDouble(),
-                child: AdWidget(ad: admobBannerAd!),
-              ),
-            ),
-        ],
-      ),
+    if (admobBannerAd == null) {
+      return const SizedBox(
+        height: 0,
+        width: 0,
+      );
+    }
+    return SizedBox(
+      width: admobBannerAd!.size.width.toDouble(),
+      height: admobBannerAd!.size.height.toDouble(),
+      child: AdWidget(ad: admobBannerAd!),
     );
   }
 }

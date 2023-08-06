@@ -182,7 +182,6 @@ class _EmiCalculateState extends State<EmiCalculate> {
             ),
           ),
         ),
-        const BannerAdWidget()
       ],
     );
   }

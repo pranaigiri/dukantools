@@ -223,7 +223,6 @@ class _MarginCalculateState extends State<MarginCalculate> {
             ),
           ),
         ),
-        const BannerAdWidget()
       ],
     );
   }

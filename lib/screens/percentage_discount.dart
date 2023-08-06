@@ -168,7 +168,6 @@ class _PercentageDiscountState extends State<PercentageDiscount> {
             ),
           ),
         ),
-        const BannerAdWidget()
       ],
     );
   }

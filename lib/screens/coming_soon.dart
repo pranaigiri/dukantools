@@ -16,7 +16,6 @@ class ComingSoon extends StatelessWidget {
             ),
           ),
         ),
-        BannerAdWidget()
       ],
     );
   }

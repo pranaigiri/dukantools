@@ -225,7 +225,6 @@ class _GramOrPriceState extends State<GramOrPrice> {
             ),
           ),
         ),
-        const BannerAdWidget()
       ],
     );
   }

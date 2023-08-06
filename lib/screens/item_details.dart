@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gram_or_price/common/banner_ad.dart';
 import 'package:gram_or_price/main.dart';
 
 import '../models/item.dart';
@@ -36,6 +37,7 @@ class ItemDetails extends StatelessWidget {
           body: Container(
             child: currentWidget,
           ),
+          bottomNavigationBar: const BannerAdWidget(),
         );
       } catch (e) {
         throw const CircularProgressIndicator();

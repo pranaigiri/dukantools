@@ -196,7 +196,6 @@ class _WeightConvertState extends State<WeightConvert> {
             ),
           ),
         ),
-        const BannerAdWidget()
       ],
     );
   }
