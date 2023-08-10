@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gram_or_price/common/banner_ad.dart';
 import 'package:gram_or_price/common/helper.dart';
 
 class InterestCalculate extends StatefulWidget {

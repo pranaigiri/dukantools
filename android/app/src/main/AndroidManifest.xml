@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="Dukan Tools"
+        android:label="Shop Tools"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
@@ -34,4 +34,7 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-5976582399377469~1033754452"/>
     </application>
+
+        <!-- For apps targeting Android 13 or higher & IMA SDK version 3.24.0 or lower -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 </manifest>

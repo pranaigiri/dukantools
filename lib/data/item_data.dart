@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gram_or_price/models/item.dart';
-import 'package:gram_or_price/screens/coming_soon.dart';
 import 'package:gram_or_price/screens/currency_convert.dart';
 import 'package:gram_or_price/screens/emi_calculate.dart';
 import 'package:gram_or_price/screens/gram_or_price.dart';
@@ -66,14 +65,6 @@ const List<Item> itemData = [
     iconData: Icons.percent,
     color: Colors.amber,
     widget: PercentageDiscount(),
-  ),
-
-  Item(
-    id: 99,
-    name: 'Coming Soon',
-    iconData: Icons.question_mark_sharp,
-    color: Colors.black54,
-    widget: ComingSoon(),
-  ),
+  )
   // Add more items as needed
 ];

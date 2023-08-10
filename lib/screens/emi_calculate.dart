@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gram_or_price/common/banner_ad.dart';
 
 class EmiCalculate extends StatefulWidget {
   const EmiCalculate({super.key});

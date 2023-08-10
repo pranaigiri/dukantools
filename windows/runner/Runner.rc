@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "Dukan Tools" "\0"
+            VALUE "FileDescription", "Shop Tools" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "Dukan Tools" "\0"
+            VALUE "InternalName", "Shop Tools" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
             VALUE "OriginalFilename", "gram_or_price.exe" "\0"
-            VALUE "ProductName", "Dukan Tools" "\0"
+            VALUE "ProductName", "Shop Tools" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

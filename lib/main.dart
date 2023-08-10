@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:gram_or_price/common/admob_helper.dart';
-import 'package:gram_or_price/common/banner_ad.dart';
 import 'package:gram_or_price/data/item_data.dart';
 import 'package:gram_or_price/screens/about_us.dart';
 import 'package:gram_or_price/screens/item_details.dart';
@@ -12,6 +11,12 @@ import 'models/item.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   MobileAds.instance.initialize();
+  // List<String> devices = ['C3D220603635C490707BC02C3BDD4058'];
+
+  // RequestConfiguration requestConfiguration = RequestConfiguration(
+  //   testDeviceIds: devices,
+  // );
+  // MobileAds.instance.updateRequestConfiguration(requestConfiguration);
 
   runApp(
     ChangeNotifierProvider<ThemeProvider>(
@@ -58,7 +63,7 @@ class MyAppState extends State<MyApp> {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp(
-      title: 'Dukan Tools',
+      title: 'Shop Tools',
       theme: themeProvider.isDarkModeEnabled
           ? ThemeData.dark(useMaterial3: true)
           : ThemeData(
@@ -119,8 +124,8 @@ class HomePageState extends State<HomePage> {
   int _interstitialLoadAttempts = 0;
   bool interstitialAdShow = true;
 
-  void _createInterstitialAd() {
-    InterstitialAd.load(
+  Future<void> _createInterstitialAd() async {
+    await InterstitialAd.load(
       adUnitId: AdMobHelper.interstitialUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
@@ -152,6 +157,8 @@ class HomePageState extends State<HomePage> {
         },
       );
       _interstitialAd!.show();
+    } else {
+      _createInterstitialAd();
     }
   }
 
@@ -192,7 +199,7 @@ class HomePageState extends State<HomePage> {
             ],
           ),
           child: AppBar(
-            title: const Text('Dukan Tools'),
+            title: const Text('Shop Tools'),
             actions: [
               IconButton(
                 onPressed: () {
@@ -264,12 +271,12 @@ class HomePageState extends State<HomePage> {
               height: 20,
             ),
             Image.asset(
-              'lib/assets/icons/dukan_tools_logo_2.png',
+              'lib/assets/icons/shop_tools_logo.png',
               width: 80,
               height: 80,
             ),
             const Text(
-              "Dukan Tools",
+              "Shop Tools",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 24),
             ),
