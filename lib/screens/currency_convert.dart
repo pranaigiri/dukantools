@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gram_or_price/common/helper.dart';
+import 'package:shop_tools/common/helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/exchange_rates_model.dart';
-import 'package:gram_or_price/services/currency_converter_service.dart';
+import 'package:shop_tools/services/currency_converter_service.dart';
 
 class CurrencyConvert extends StatefulWidget {
   const CurrencyConvert({super.key});

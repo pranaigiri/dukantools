@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gram_or_price/common/helper.dart';
+import 'package:shop_tools/common/helper.dart';
 
 class GramOrPrice extends StatefulWidget {
   const GramOrPrice({super.key});
@@ -232,7 +232,7 @@ class _GramOrPriceState extends State<GramOrPrice> {
   calculatePrice() {
     getPricePerGram();
     calculatedPrice = (selectedPrice! / selectedGram!) * calculatedGram!;
-    itemCalculatedPriceController.text = _helper.formatDouble(calculatedGram!);
+    itemCalculatedPriceController.text = _helper.formatDouble(calculatedPrice!);
 
     if (calculatedPrice == 0) {
       setState(() {

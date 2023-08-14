@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:gram_or_price/common/admob_helper.dart';
-import 'package:gram_or_price/main.dart';
-import 'package:gram_or_price/models/item.dart';
+import 'package:shop_tools/common/admob_helper.dart';
+import 'package:shop_tools/main.dart';
+import 'package:shop_tools/models/item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ItemDetails extends StatefulWidget {
@@ -31,11 +31,10 @@ class _ItemDetailsState extends State<ItemDetails> {
       secDiff = DateTime.now().difference(cachedAdTimestamp).inSeconds;
     }
 
-    print("-----------------------LOADING BANNER AD");
-
     if ((_bottomBannerAd == null && secDiff == null) ||
         secDiff == null ||
         secDiff > adExpTime) {
+      //print("-----------------------LOADING BANNER AD");
       BannerAd(
         adUnitId: AdMobHelper.bannerUnitId,
         size: AdSize.banner,
@@ -46,6 +45,7 @@ class _ItemDetailsState extends State<ItemDetails> {
             setState(() {
               _isBottomBannerAdLoaded = true;
             });
+            prefs.setString("cachedAdTime", DateTime.now().toString());
           },
           onAdFailedToLoad: (ad, error) {
             _bottomBannerAd?.dispose();
@@ -57,31 +57,32 @@ class _ItemDetailsState extends State<ItemDetails> {
   }
 
   Timer? _timer;
+
   Future<void> startTimer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     DateTime? cachedAdTimestamp;
     int? secDiff;
+
     _timer = Timer.periodic(
-      const Duration(seconds: 1),
-      (Timer timer) {
-        cachedAdTimestamp = DateTime.tryParse(
-          prefs.getString("cachedAdTime").toString(),
-        );
+      const Duration(seconds: 5),
+      (Timer timer) async {
+        String savedDateString = prefs.getString("cachedAdTime")!;
+        cachedAdTimestamp = DateTime.tryParse(savedDateString);
         if (cachedAdTimestamp != null) {
           secDiff = DateTime.now().difference(cachedAdTimestamp!).inSeconds;
         }
+        if (secDiff != null && secDiff! > adExpTime) {
+          _createBottomBannerAd();
+        }
       },
     );
-
-    if (secDiff! > adExpTime) {
-      _createBottomBannerAd();
-    }
   }
 
   @override
   void initState() {
     super.initState();
     _createBottomBannerAd();
+    startTimer();
   }
 
   @override

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:gram_or_price/models/item.dart';
-import 'package:gram_or_price/screens/currency_convert.dart';
-import 'package:gram_or_price/screens/emi_calculate.dart';
-import 'package:gram_or_price/screens/gram_or_price.dart';
-import 'package:gram_or_price/screens/interest_calculate.dart';
-import 'package:gram_or_price/screens/margin_calculate.dart';
-import 'package:gram_or_price/screens/percentage_discount.dart';
-import 'package:gram_or_price/screens/profit_calculate.dart';
-import 'package:gram_or_price/screens/weight_convert.dart';
+import 'package:shop_tools/models/item.dart';
+import 'package:shop_tools/screens/currency_convert.dart';
+import 'package:shop_tools/screens/emi_calculate.dart';
+import 'package:shop_tools/screens/gram_or_price.dart';
+import 'package:shop_tools/screens/interest_calculate.dart';
+import 'package:shop_tools/screens/margin_calculate.dart';
+import 'package:shop_tools/screens/percentage_discount.dart';
+import 'package:shop_tools/screens/profit_calculate.dart';
+import 'package:shop_tools/screens/weight_convert.dart';
 
 const List<Item> itemData = [
   Item(

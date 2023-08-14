@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:gram_or_price/common/admob_helper.dart';
-import 'package:gram_or_price/data/item_data.dart';
-import 'package:gram_or_price/screens/about_us.dart';
-import 'package:gram_or_price/screens/item_details.dart';
+import 'package:shop_tools/common/admob_helper.dart';
+import 'package:shop_tools/data/item_data.dart';
+import 'package:shop_tools/screens/about_us.dart';
+import 'package:shop_tools/screens/item_details.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models/item.dart';
@@ -253,9 +253,9 @@ class HomePageState extends State<HomePage> {
                       items[index].name,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.0,
-                      ),
+                          color: Colors.white,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
