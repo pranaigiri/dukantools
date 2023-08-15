@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shop_tools/common/version_code.dart';
 
 class AboutUs extends StatelessWidget {
-  const AboutUs({super.key});
+  AboutUs({super.key});
+
+  final _versionCode = VersionCode();
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +33,19 @@ class AboutUs extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14),
             ),
-            const Text(
-              "v1.0.0",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.w100, color: Colors.grey),
+            FutureBuilder<String>(
+              future: _versionCode.getVersionCode(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return const Text('Error loading version');
+                } else {
+                  return Text('Version: ${snapshot.data}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w100, color: Colors.grey));
+                }
+              },
             ),
             const SizedBox(
               height: 20,

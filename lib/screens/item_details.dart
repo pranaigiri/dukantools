@@ -22,11 +22,14 @@ class _ItemDetailsState extends State<ItemDetails> {
   Future<void> _createBottomBannerAd() async {
     DateTime? cachedAdTimestamp;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    cachedAdTimestamp = DateTime.tryParse(
-      prefs.getString("cachedAdTime")!.toString(),
-    );
 
+    String? savedDateString = prefs.getString("cachedAdTime");
     int? secDiff;
+
+    if (savedDateString != null) {
+      cachedAdTimestamp = DateTime.tryParse(savedDateString);
+    }
+
     if (cachedAdTimestamp != null) {
       secDiff = DateTime.now().difference(cachedAdTimestamp).inSeconds;
     }
@@ -34,7 +37,6 @@ class _ItemDetailsState extends State<ItemDetails> {
     if ((_bottomBannerAd == null && secDiff == null) ||
         secDiff == null ||
         secDiff > adExpTime) {
-      //print("-----------------------LOADING BANNER AD");
       BannerAd(
         adUnitId: AdMobHelper.bannerUnitId,
         size: AdSize.banner,
@@ -42,9 +44,11 @@ class _ItemDetailsState extends State<ItemDetails> {
         listener: BannerAdListener(
           onAdLoaded: (ad) {
             _bottomBannerAd = ad as BannerAd;
-            setState(() {
-              _isBottomBannerAdLoaded = true;
-            });
+            if (mounted) {
+              setState(() {
+                _isBottomBannerAdLoaded = true;
+              });
+            }
             prefs.setString("cachedAdTime", DateTime.now().toString());
           },
           onAdFailedToLoad: (ad, error) {
@@ -66,13 +70,16 @@ class _ItemDetailsState extends State<ItemDetails> {
     _timer = Timer.periodic(
       const Duration(seconds: 5),
       (Timer timer) async {
-        String savedDateString = prefs.getString("cachedAdTime")!;
-        cachedAdTimestamp = DateTime.tryParse(savedDateString);
-        if (cachedAdTimestamp != null) {
-          secDiff = DateTime.now().difference(cachedAdTimestamp!).inSeconds;
-        }
-        if (secDiff != null && secDiff! > adExpTime) {
-          _createBottomBannerAd();
+        String? savedDateString = prefs.getString("cachedAdTime");
+
+        if (savedDateString != null) {
+          cachedAdTimestamp = DateTime.tryParse(savedDateString);
+          if (cachedAdTimestamp != null) {
+            secDiff = DateTime.now().difference(cachedAdTimestamp!).inSeconds;
+          }
+          if (secDiff != null && secDiff! > adExpTime) {
+            _createBottomBannerAd();
+          }
         }
       },
     );

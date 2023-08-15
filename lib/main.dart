@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shop_tools/common/admob_helper.dart';
+import 'package:shop_tools/common/version_code.dart';
 import 'package:shop_tools/data/item_data.dart';
 import 'package:shop_tools/screens/about_us.dart';
 import 'package:shop_tools/screens/item_details.dart';
@@ -82,7 +83,7 @@ class MyAppState extends State<MyApp> {
         },
         '/about-us': (context) {
           try {
-            return const AboutUs();
+            return AboutUs();
           } catch (e) {
             // Handle the exception or display an error page
             return const HomePage();
@@ -172,12 +173,13 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
+    final versionCode = VersionCode();
 
     // Adjust the crossAxisCount based on the screen width
     if (screenWidth <= 400) {
       crossAxisCount = 2; // For extra smaller screens
     } else if (screenWidth <= 600) {
-      crossAxisCount = 3; // For smaller screens
+      crossAxisCount = 2; // For smaller screens
     } else if (screenWidth <= 1200) {
       crossAxisCount = 4; // For medium-sized screens
     } else {
@@ -280,10 +282,21 @@ class HomePageState extends State<HomePage> {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 24),
             ),
-            const Text(
-              "1.0.0",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12),
+            FutureBuilder<String>(
+              future: versionCode.getVersionCode(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return const Text('-');
+                } else {
+                  return Text(
+                    '${snapshot.data}',
+                    style: const TextStyle(fontSize: 12),
+                    textAlign: TextAlign.center,
+                  );
+                }
+              },
             ),
             const SizedBox(
               height: 20,
