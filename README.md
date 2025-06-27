@@ -28,4 +28,4 @@ Follow these steps to get the app up and running on your local machine.
 Insert screenshots of your app here to provide a visual representation of its functionality. Feel free to add captions to explain each screenshot.
 
 ![Shop_Tools_Feature_Graphic_for_playstore](https://github.com/pranaigiri/dukantools/assets/102620441/b369e561-c17c-4690-a5dc-c83fe9ff42db)
-*NOTE: Temporarily Removed from Play Store*
+*NOTE: Available in Play Store*
