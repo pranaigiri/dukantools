@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shop_tools/common/version_code.dart';
+import 'package:dukan_tools/common/version_code.dart';
 
 class AboutUs extends StatelessWidget {
   AboutUs({super.key});
@@ -19,12 +19,12 @@ class AboutUs extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
-              'lib/assets/icons/shop_tools_logo.png',
+              'lib/assets/icons/dukan_tools_logo.png',
               width: 80,
               height: 80,
             ),
             const Text(
-              "Shop Tools",
+              "Dukan Tools",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 24),
             ),

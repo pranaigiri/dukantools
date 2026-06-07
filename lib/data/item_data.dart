@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:shop_tools/models/item.dart';
-import 'package:shop_tools/screens/currency_convert.dart';
-import 'package:shop_tools/screens/emi_calculate.dart';
-import 'package:shop_tools/screens/gram_or_price.dart';
-import 'package:shop_tools/screens/interest_calculate.dart';
-import 'package:shop_tools/screens/margin_calculate.dart';
-import 'package:shop_tools/screens/percentage_discount.dart';
-import 'package:shop_tools/screens/profit_calculate.dart';
-import 'package:shop_tools/screens/weight_convert.dart';
-import 'package:shop_tools/screens/gst_calculate.dart';
-import 'package:shop_tools/screens/cash_tally.dart';
-import 'package:shop_tools/screens/bulk_discount.dart';
+import 'package:dukan_tools/models/item.dart';
+import 'package:dukan_tools/screens/currency_convert.dart';
+import 'package:dukan_tools/screens/emi_calculate.dart';
+import 'package:dukan_tools/screens/gram_or_price.dart';
+import 'package:dukan_tools/screens/interest_calculate.dart';
+import 'package:dukan_tools/screens/margin_calculate.dart';
+import 'package:dukan_tools/screens/percentage_discount.dart';
+import 'package:dukan_tools/screens/profit_calculate.dart';
+import 'package:dukan_tools/screens/weight_convert.dart';
+import 'package:dukan_tools/screens/gst_calculate.dart';
+import 'package:dukan_tools/screens/cash_tally.dart';
+import 'package:dukan_tools/screens/bulk_discount.dart';
 
 const List<Item> itemData = [
   Item(

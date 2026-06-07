@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shop_tools/common/helper.dart';
+import 'package:dukan_tools/common/helper.dart';
 
 class WeightConvert extends StatefulWidget {
   const WeightConvert({super.key});
@@ -269,11 +269,14 @@ class _WeightConvertState extends State<WeightConvert> {
             ),
           ),
           const SizedBox(height: 12),
-          const Center(
-            child: Icon(
-              Icons.swap_vert,
-              color: Colors.redAccent,
-              size: 32,
+          Center(
+            child: IconButton(
+              icon: const Icon(
+                Icons.swap_vert,
+                color: Colors.redAccent,
+                size: 32,
+              ),
+              onPressed: _swapUnitsAndValues,
             ),
           ),
           const SizedBox(height: 12),
@@ -395,5 +398,29 @@ class _WeightConvertState extends State<WeightConvert> {
         _persistedMxVal = mxController.text;
       });
     }
+  }
+
+  void _swapUnitsAndValues() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      final tempUnit = weightX;
+      weightX = weightY;
+      weightY = tempUnit;
+      _persistedWeightX = weightX;
+      _persistedWeightY = weightY;
+
+      final tempVal = mxController.text;
+      mxController.text = myController.text;
+      myController.text = tempVal;
+      _persistedMxVal = mxController.text;
+      _persistedMyVal = myController.text;
+
+      if (mxController.text.isNotEmpty) {
+        calculateY();
+      } else {
+        myController.clear();
+        _persistedMyVal = "";
+      }
+    });
   }
 }

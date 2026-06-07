@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_tools/common/version_code.dart';
-import 'package:shop_tools/main.dart'; // To access ThemeProvider
-import 'package:shop_tools/screens/dashboard_tab.dart';
-import 'package:shop_tools/screens/day_book_tab.dart';
-import 'package:shop_tools/screens/ledger_tab.dart';
-import 'package:shop_tools/screens/calculators_tab.dart';
+import 'package:dukan_tools/common/version_code.dart';
+import 'package:dukan_tools/main.dart'; // To access ThemeProvider
+import 'package:dukan_tools/screens/dashboard_tab.dart';
+import 'package:dukan_tools/screens/day_book_tab.dart';
+import 'package:dukan_tools/screens/ledger_tab.dart';
+import 'package:dukan_tools/features/financial_tools/screens/financial_tools_screen.dart';
 
 class MainNavigationShell extends StatefulWidget {
   const MainNavigationShell({super.key});
@@ -17,12 +17,10 @@ class MainNavigationShell extends StatefulWidget {
 class _MainNavigationShellState extends State<MainNavigationShell> {
   int _currentIndex = 0;
 
-  final List<Widget> _tabs = const [
-    DashboardTab(),
-    DayBookTab(),
-    LedgerTab(),
-    CalculatorsTab(),
-  ];
+  /// Track which tabs have been visited so we only build them on first access.
+  /// This avoids building all 4 heavy tabs simultaneously (was causing 747
+  /// skipped frames).
+  final Set<int> _initializedTabs = {0}; // Tab 0 (dashboard) always built
 
   final List<String> _titles = const [
     "Overview Insights",
@@ -30,6 +28,21 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     "Digital Ledger / Khata",
     "Financial Toolset",
   ];
+
+  Widget _buildTab(int index) {
+    switch (index) {
+      case 0:
+        return const DashboardTab();
+      case 1:
+        return const DayBookTab();
+      case 2:
+        return const LedgerTab();
+      case 3:
+        return const FinancialToolsScreen();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +57,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4.0,
                 spreadRadius: 1.0,
                 offset: const Offset(0, 2),
@@ -59,7 +72,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                   themeProvider.toggleTheme();
                 },
                 icon: Icon(
-                  themeProvider.isDarkModeEnabled ? Icons.wb_sunny : Icons.nights_stay,
+                  themeProvider.isDarkModeEnabled
+                      ? Icons.wb_sunny
+                      : Icons.nights_stay,
                 ),
               ),
             ],
@@ -71,13 +86,14 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           children: [
             const SizedBox(height: 20),
             Image.asset(
-              'lib/assets/icons/shop_tools_logo.png',
+              'lib/assets/icons/dukan_tools_logo.png',
               width: 80,
               height: 80,
-              errorBuilder: (context, error, stackTrace) => const Icon(Icons.shop, size: 80, color: Colors.blue),
+              errorBuilder: (context, error, stackTrace) =>
+                  const Icon(Icons.shop, size: 80, color: Colors.blue),
             ),
             const Text(
-              "Shop Tools",
+              "Dukan Tools",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -116,12 +132,21 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           ],
         ),
       ),
-      body: _tabs[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: List.generate(4, (index) {
+          // Only build tabs that have been visited; show empty placeholder for others
+          if (_initializedTabs.contains(index)) {
+            return _buildTab(index);
+          }
+          return const SizedBox.shrink();
+        }),
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -2),
             )
@@ -136,6 +161,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           elevation: 8,
           onTap: (index) {
             setState(() {
+              _initializedTabs.add(index); // Lazily initialize the tab
               _currentIndex = index;
             });
           },

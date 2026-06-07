@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_tools/providers/data_provider.dart';
-import 'package:shop_tools/screens/ledger_detail_screen.dart';
+import 'package:dukan_tools/providers/data_provider.dart';
+import 'package:dukan_tools/screens/ledger_detail_screen.dart';
 
 class LedgerTab extends StatefulWidget {
   const LedgerTab({super.key});
@@ -88,6 +88,7 @@ class _LedgerTabState extends State<LedgerTab> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'ledger_add_customer_fab',
         onPressed: () => _showAddCustomerDialog(context, dataProvider),
         icon: const Icon(Icons.person_add_alt_1),
         label: const Text("Add Customer"),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_tools/providers/data_provider.dart';
-import 'package:shop_tools/models/pl_entry.dart';
+import 'package:dukan_tools/providers/data_provider.dart';
+import 'package:dukan_tools/models/pl_entry.dart';
 import 'package:intl/intl.dart';
 
 class DayBookTab extends StatefulWidget {
@@ -89,6 +89,7 @@ class _DayBookTabState extends State<DayBookTab> {
       ),
       floatingActionButton: _viewMode == 'daily'
           ? FloatingActionButton.extended(
+              heroTag: 'daybook_add_transaction_fab',
               onPressed: () => _showAddEntrySheet(context, dataProvider),
               icon: const Icon(Icons.add),
               label: const Text("Add Transaction"),

@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shop_tools/screens/about_us.dart';
-import 'package:shop_tools/screens/item_details.dart';
-import 'package:shop_tools/screens/main_navigation_shell.dart';
-import 'package:shop_tools/services/database_service.dart';
-import 'package:shop_tools/providers/data_provider.dart';
+import 'package:dukan_tools/screens/about_us.dart';
+import 'package:dukan_tools/screens/item_details.dart';
+import 'package:dukan_tools/screens/main_navigation_shell.dart';
+import 'package:dukan_tools/services/database_service.dart';
+import 'package:dukan_tools/providers/data_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Fire-and-forget: don't block app startup for ads
   MobileAds.instance.initialize();
-  
+
   // Initialize Offline Hive database
   await DatabaseService.init();
 
@@ -67,7 +69,7 @@ class MyAppState extends State<MyApp> {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp(
-      title: 'Shop Tools',
+      title: 'Dukan Tools',
       theme: themeProvider.isDarkModeEnabled
           ? ThemeData.dark(useMaterial3: true)
           : ThemeData(
@@ -76,27 +78,9 @@ class MyAppState extends State<MyApp> {
             ),
       initialRoute: '/',
       routes: {
-        '/': (context) {
-          try {
-            return const MainNavigationShell();
-          } catch (e) {
-            return const MainNavigationShell();
-          }
-        },
-        '/about-us': (context) {
-          try {
-            return AboutUs();
-          } catch (e) {
-            return const MainNavigationShell();
-          }
-        },
-        '/itemDetails': (context) {
-          try {
-            return const ItemDetails();
-          } catch (e) {
-            return const MainNavigationShell();
-          }
-        },
+        '/': (context) => const MainNavigationShell(),
+        '/about-us': (context) => AboutUs(),
+        '/itemDetails': (context) => const ItemDetails(),
       },
     );
   }

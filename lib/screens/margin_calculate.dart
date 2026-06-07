@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shop_tools/common/helper.dart';
+import 'package:dukan_tools/common/helper.dart';
 
 class MarginCalculate extends StatefulWidget {
   const MarginCalculate({super.key});

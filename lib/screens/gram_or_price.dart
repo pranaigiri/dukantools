@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shop_tools/common/helper.dart';
+import 'package:dukan_tools/common/helper.dart';
 
 class GramOrPrice extends StatefulWidget {
   const GramOrPrice({super.key});
@@ -414,12 +414,15 @@ class _GramOrPriceState extends State<GramOrPrice> {
                         ],
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                      child: Icon(
-                        Icons.swap_horiz,
-                        color: Colors.orange,
-                        size: 32,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.swap_horiz,
+                          color: Colors.orange,
+                          size: 32,
+                        ),
+                        onPressed: _swapCalculatedValues,
                       ),
                     ),
                     Flexible(
@@ -512,6 +515,23 @@ class _GramOrPriceState extends State<GramOrPrice> {
       _persistedCalcPrice = calculatedPrice;
       itemCalculatedPriceController.text = _helper.formatDouble(calculatedPrice);
     }
+  }
+
+  void _swapCalculatedValues() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      double temp = calculatedPrice;
+      calculatedPrice = calculatedGram;
+      calculatedGram = temp;
+      
+      _persistedCalcPrice = calculatedPrice;
+      _persistedCalcGram = calculatedGram;
+      
+      itemCalculatedPriceController.text = calculatedPrice == 0 ? "" : _helper.formatDouble(calculatedPrice);
+      itemCalculatedGramController.text = calculatedGram == 0 ? "" : _helper.formatDouble(calculatedGram);
+      
+      calculateGram();
+    });
   }
 
   void calculateRates() {

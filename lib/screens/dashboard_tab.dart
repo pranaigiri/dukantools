@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:shop_tools/providers/data_provider.dart';
-import 'package:shop_tools/models/pl_entry.dart';
-import 'package:shop_tools/models/ledger_account.dart';
-import 'package:shop_tools/common/helper.dart';
+import 'package:dukan_tools/providers/data_provider.dart';
+import 'package:dukan_tools/models/pl_entry.dart';
+import 'package:dukan_tools/models/ledger_account.dart';
+import 'package:dukan_tools/common/helper.dart';
 
 class DashboardTab extends StatelessWidget {
   const DashboardTab({super.key});

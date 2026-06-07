@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:shop_tools/models/ledger_account.dart';
-import 'package:shop_tools/models/pl_entry.dart';
-import 'package:shop_tools/services/backup_service.dart';
-import 'package:shop_tools/services/database_service.dart';
+import 'package:dukan_tools/models/ledger_account.dart';
+import 'package:dukan_tools/models/pl_entry.dart';
+import 'package:dukan_tools/services/backup_service.dart';
+import 'package:dukan_tools/services/database_service.dart';
 
 class DataProvider with ChangeNotifier {
   List<PLEntry> _plEntries = [];
@@ -16,19 +16,44 @@ class DataProvider with ChangeNotifier {
   String? get restoreMessage => _restoreMessage;
 
   DataProvider() {
-    loadData();
+    _loadInitialData();
   }
 
+  /// First load from constructor — avoids the initial notifyListeners with
+  /// isLoading=true since the widget tree hasn't mounted yet.
+  Future<void> _loadInitialData() async {
+    try {
+      await _loadFromDatabase();
+    } catch (e) {
+      debugPrint("Error during initial data load: $e");
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  /// Called from pull-to-refresh.
   Future<void> loadData() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final plBox = DatabaseService.plBox;
-      final ledgerBox = DatabaseService.ledgerBox;
+      await _loadFromDatabase();
+    } catch (e) {
+      debugPrint("Error loading data from Hive: $e");
+    }
 
-      // Check if DB is empty to run auto-restore
-      if (plBox.isEmpty && ledgerBox.isEmpty) {
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  /// Core data loading logic shared by constructor and pull-to-refresh.
+  Future<void> _loadFromDatabase() async {
+    final plBox = DatabaseService.plBox;
+    final ledgerBox = DatabaseService.ledgerBox;
+
+    // Check if DB is empty to run auto-restore
+    if (plBox.isEmpty && ledgerBox.isEmpty) {
+      try {
         final backupData = await BackupService.scanAndRestore();
         if (backupData != null) {
           // Restore P&L Entries
@@ -47,25 +72,21 @@ class DataProvider with ChangeNotifier {
 
           _restoreMessage = "Successfully auto-restored from public backup!";
         }
+      } catch (e) {
+        debugPrint("Backup restore failed (non-fatal): $e");
       }
-
-      // Load P&L Entries
-      _plEntries = plBox.values
-          .map((e) => PLEntry.fromJson(Map<dynamic, dynamic>.from(e as Map)))
-          .toList()
-        ..sort((a, b) => b.date.compareTo(a.date)); // Newest first
-
-      // Load Ledger Accounts
-      _ledgerAccounts = ledgerBox.values
-          .map((e) => LedgerAccount.fromJson(Map<dynamic, dynamic>.from(e as Map)))
-          .toList();
-
-    } catch (e) {
-      debugPrint("Error loading data from Hive: $e");
     }
 
-    _isLoading = false;
-    notifyListeners();
+    // Load P&L Entries
+    _plEntries = plBox.values
+        .map((e) => PLEntry.fromJson(Map<dynamic, dynamic>.from(e as Map)))
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date)); // Newest first
+
+    // Load Ledger Accounts
+    _ledgerAccounts = ledgerBox.values
+        .map((e) => LedgerAccount.fromJson(Map<dynamic, dynamic>.from(e as Map)))
+        .toList();
   }
 
   // Clear restore message after showing it

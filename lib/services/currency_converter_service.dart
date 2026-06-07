@@ -196,8 +196,8 @@ class CurrencyConverterService {
       final prefData = json.decode(savedData);
       final savedApiResponse = ExchangeRatesModel.fromJson(prefData);
 
-      // If cache is expired, trigger a background update
-      if (cacheAgeHours >= 12) {
+      // If cache is expired, trigger a background update (30 days validity)
+      if (cacheAgeHours >= 24 * 30) {
         fetchFromApi().then((value) {
           if (kDebugMode) {
             print("Exchange rates background update complete");
@@ -262,6 +262,34 @@ class CurrencyConverterService {
     return exchangeRates;
   }
 
+  String _toRelativeTime(DateTime dateTime, {bool isFuture = false}) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+    final difference = targetDate.difference(today).inDays;
+
+    if (difference == 0) {
+      return "Today";
+    }
+
+    if (isFuture) {
+      if (difference == 1) {
+        return "Tomorrow";
+      } else if (difference > 1) {
+        return "in $difference days";
+      } else {
+        return "Today";
+      }
+    } else {
+      final absDiff = difference.abs();
+      if (absDiff == 1) {
+        return "1 day ago";
+      } else {
+        return "$absDiff days ago";
+      }
+    }
+  }
+
   Future<String> getNextUpdateDuration() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final int cacheTimestamp = prefs.getInt("lastSavedApiTimestamp") ?? 0;
@@ -271,19 +299,41 @@ class CurrencyConverterService {
     }
 
     final DateTime lastUpdated = DateTime.fromMillisecondsSinceEpoch(cacheTimestamp);
-    final DateTime nextUpdate = lastUpdated.add(const Duration(hours: 12));
+    final DateTime nextUpdate = lastUpdated.add(const Duration(days: 30));
     final DateTime now = DateTime.now();
 
     if (now.isAfter(nextUpdate)) {
       return 'Rates updating...';
     } else {
       final Duration difference = nextUpdate.difference(now);
-      if (difference.inHours > 0) {
-        return 'Updated today at ${lastUpdated.hour.toString().padLeft(2, '0')}:${lastUpdated.minute.toString().padLeft(2, '0')} (Next: ${difference.inHours}h)';
+      if (difference.inDays > 0) {
+        return 'Updated: ${_toRelativeTime(lastUpdated)} (Next: in ${difference.inDays} days)';
+      } else if (difference.inHours > 0) {
+        return 'Updated: ${_toRelativeTime(lastUpdated)} (Next: in ${difference.inHours}h)';
       } else {
-        return 'Updated today at ${lastUpdated.hour.toString().padLeft(2, '0')}:${lastUpdated.minute.toString().padLeft(2, '0')} (Next: ${difference.inMinutes}m)';
+        return 'Updated: ${_toRelativeTime(lastUpdated)} (Next: in ${difference.inMinutes}m)';
       }
     }
+  }
+
+  Future<Map<String, String>> getCacheMetadata() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int cacheTimestamp = prefs.getInt("lastSavedApiTimestamp") ?? 0;
+
+    if (cacheTimestamp == 0) {
+      return {
+        'lastUpdated': 'Offline (Using static default rates)',
+        'nextRefresh': 'Connect to Internet to refresh',
+      };
+    }
+
+    final DateTime lastUpdated = DateTime.fromMillisecondsSinceEpoch(cacheTimestamp);
+    final DateTime nextRefresh = lastUpdated.add(const Duration(days: 30));
+
+    return {
+      'lastUpdated': _toRelativeTime(lastUpdated, isFuture: false),
+      'nextRefresh': _toRelativeTime(nextRefresh, isFuture: true),
+    };
   }
 }
 

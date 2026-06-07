@@ -1,4 +1,4 @@
-# Shop Tools - Calculation Tool for Shops
+# Dukan Tools - Calculation Tool for Shops
 
 Welcome to my Flutter application that serves as a versatile calculator for various tasks. This app is designed to simplify common calculations, making your daily tasks more convenient.
 
