@@ -8,6 +8,9 @@ import 'package:shop_tools/screens/margin_calculate.dart';
 import 'package:shop_tools/screens/percentage_discount.dart';
 import 'package:shop_tools/screens/profit_calculate.dart';
 import 'package:shop_tools/screens/weight_convert.dart';
+import 'package:shop_tools/screens/gst_calculate.dart';
+import 'package:shop_tools/screens/cash_tally.dart';
+import 'package:shop_tools/screens/bulk_discount.dart';
 
 const List<Item> itemData = [
   Item(
@@ -65,6 +68,26 @@ const List<Item> itemData = [
     iconData: Icons.percent,
     color: Colors.amber,
     widget: PercentageDiscount(),
-  )
-  // Add more items as needed
+  ),
+  Item(
+    id: 9,
+    name: 'GST Tax',
+    iconData: Icons.receipt_long,
+    color: Colors.teal,
+    widget: GstCalculate(),
+  ),
+  Item(
+    id: 10,
+    name: 'Cash Tally',
+    iconData: Icons.calculate,
+    color: Colors.blueGrey,
+    widget: CashTally(),
+  ),
+  Item(
+    id: 11,
+    name: 'Bulk Savings',
+    iconData: Icons.grid_view,
+    color: Colors.cyan,
+    widget: BulkDiscount(),
+  ),
 ];

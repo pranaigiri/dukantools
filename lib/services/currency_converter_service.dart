@@ -5,7 +5,7 @@ import '../models/exchange_rates_model.dart';
 import 'package:http/http.dart' as http;
 
 class CurrencyConverterService {
-  //test api response
+  // Fallback static api response (EUR base)
   final staticApiResponse = {
     "success": true,
     "timestamp": 1690709404,
@@ -184,122 +184,109 @@ class CurrencyConverterService {
       "ZWL": 355.210296
     }
   };
-  List<Map<String, double>>? apiExchangeRates = [];
 
   Future<List<Map<String, double>>> getExchangeRates() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ExchangeRatesModel? newApiResponse;
-    ExchangeRatesModel savedApiResponse;
 
     final savedData = prefs.getString("lastSavedApiResponse");
+    final int cacheTimestamp = prefs.getInt("lastSavedApiTimestamp") ?? 0;
+    final int cacheAgeHours = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(cacheTimestamp)).inHours;
 
     if (savedData != null) {
       final prefData = json.decode(savedData);
-      savedApiResponse = ExchangeRatesModel.fromJson(prefData);
+      final savedApiResponse = ExchangeRatesModel.fromJson(prefData);
 
-      final DateTime savedTimestamp = DateTime.fromMillisecondsSinceEpoch(
-          savedApiResponse.timestamp * 1000);
-
-      // Check if the saved date is the 1st day of the month
-      if (savedTimestamp.day == 1) {
-        // If it is, update the rates by fetching new data from API
-        newApiResponse = await fetchFromApi();
-        if (newApiResponse != null) {
-          await prefs.setString(
-              "lastSavedApiResponse", json.encode(newApiResponse.toJson()));
-          return getRatesFromResponse(newApiResponse); // Return new data
-        }
-      } else {
-        // Check the difference in days between the current date and the 1st day of the next month
-        final DateTime nextMonthFirstDay =
-            DateTime(savedTimestamp.year, savedTimestamp.month + 1, 1);
-        final int daysDifference =
-            nextMonthFirstDay.difference(DateTime.now()).inDays;
-
-        if (daysDifference <= 0) {
-          // If the difference is zero or negative, it means we passed the 1st day of the next month
-          // So, update the rates by fetching new data from API
-          newApiResponse = await fetchFromApi();
-          if (newApiResponse != null) {
-            await prefs.setString(
-                "lastSavedApiResponse", json.encode(newApiResponse.toJson()));
-            return getRatesFromResponse(newApiResponse); // Return new data
+      // If cache is expired, trigger a background update
+      if (cacheAgeHours >= 12) {
+        fetchFromApi().then((value) {
+          if (kDebugMode) {
+            print("Exchange rates background update complete");
           }
-        }
+        });
       }
-
-      // If the rates are not updated, use the saved rates
       return getRatesFromResponse(savedApiResponse);
     }
 
-    // If no saved data, use default staticApiResponse
+    // No cache found: Try to fetch synchronously. If it fails, fallback to static defaults
+    final newApiResponse = await fetchFromApi();
+    if (newApiResponse != null) {
+      return getRatesFromResponse(newApiResponse);
+    }
+
     return getRatesFromResponse(ExchangeRatesModel.fromJson(staticApiResponse));
   }
 
   Future<ExchangeRatesModel?> fetchFromApi() async {
-    //fetch
     try {
       final http.Response response = await http.get(
-          Uri.parse(
-              "http://api.exchangeratesapi.io/v1/latest?access_key=d98ffb6de4fa5bddb1eec3363cc4f55e"),
-          headers: null);
+        Uri.parse("https://api.frankfurter.app/latest"),
+      );
+
       if (response.statusCode == 200) {
-        final parsed = await compute(jsonDecode, response.body);
-        //save to shared preference
+        final Map<String, dynamic> parsed = await compute(_parseJson, response.body);
+        
+        final rates = Map<String, dynamic>.from(parsed["rates"]);
+        // Ensure the base currency (EUR) is explicitly present in the rates map
+        rates["EUR"] = 1.0;
+
+        final transformed = {
+          "success": true,
+          "timestamp": DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          "base": parsed["base"] ?? "EUR",
+          "date": parsed["date"] ?? DateTime.now().toString().split(" ")[0],
+          "rates": rates
+        };
+
         final SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString("lastSavedApiResponse", json.encode(parsed));
-        return ExchangeRatesModel.fromJson(parsed);
+        await prefs.setString("lastSavedApiResponse", json.encode(transformed));
+        await prefs.setInt("lastSavedApiTimestamp", DateTime.now().millisecondsSinceEpoch);
+
+        return ExchangeRatesModel.fromJson(transformed);
       }
     } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching exchange rates: $e");
+      }
       return null;
     }
-
     return null;
   }
 
-  //RETURN RATES FROM EXCHANGE RATES RESPONSE
   List<Map<String, double>> getRatesFromResponse(ExchangeRatesModel res) {
     List<Map<String, double>> exchangeRates = [];
     for (var currency in res.rates.keys) {
       exchangeRates.add({currency: res.rates[currency]!});
     }
+    // Sort alphabetically for user convenience
+    exchangeRates.sort((a, b) => a.keys.first.compareTo(b.keys.first));
     return exchangeRates;
   }
 
-// RETURN DURATION UNTIL NEXT UPDATE
   Future<String> getNextUpdateDuration() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ExchangeRatesModel savedExchangeRates;
-    if (prefs.getString("lastSavedApiResponse") != null) {
-      final prefData =
-          await json.decode(prefs.getString("lastSavedApiResponse")!);
-      savedExchangeRates = ExchangeRatesModel.fromJson(prefData);
-    } else {
-      savedExchangeRates = ExchangeRatesModel.fromJson(staticApiResponse);
+    final int cacheTimestamp = prefs.getInt("lastSavedApiTimestamp") ?? 0;
+
+    if (cacheTimestamp == 0) {
+      return 'Using Static / Default Rates (Offline)';
     }
 
-    int timestamp = savedExchangeRates.timestamp;
-    DateTime lastUpdated =
-        DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    final DateTime lastUpdated = DateTime.fromMillisecondsSinceEpoch(cacheTimestamp);
+    final DateTime nextUpdate = lastUpdated.add(const Duration(hours: 12));
+    final DateTime now = DateTime.now();
 
-    final DateTime nextUpdateDate =
-        DateTime(lastUpdated.year, lastUpdated.month + 1, 1);
-    DateTime now = DateTime.now();
-
-    if (now.day == 1 && now.month != lastUpdated.month) {
-      // If it's already the 1st day of a new month, return 'Just Now'
-      return 'Upated Just Now';
-    }
-
-    Duration difference = nextUpdateDate.difference(now);
-
-    if (difference.inDays >= 0) {
-      return 'Next update in ${difference.inDays} day${difference.inDays == 1 ? '' : 's'}';
+    if (now.isAfter(nextUpdate)) {
+      return 'Rates updating...';
     } else {
-      // If we already passed the next update date, calculate the days until the next month's 1st day
-      final DateTime nextMonthFirstDay = DateTime(now.year, now.month + 1, 1);
-      Duration nextMonthDifference = nextMonthFirstDay.difference(now);
-      return 'Next update in ${nextMonthDifference.inDays} day${nextMonthDifference.inDays == 1 ? '' : 's'}';
+      final Duration difference = nextUpdate.difference(now);
+      if (difference.inHours > 0) {
+        return 'Updated today at ${lastUpdated.hour.toString().padLeft(2, '0')}:${lastUpdated.minute.toString().padLeft(2, '0')} (Next: ${difference.inHours}h)';
+      } else {
+        return 'Updated today at ${lastUpdated.hour.toString().padLeft(2, '0')}:${lastUpdated.minute.toString().padLeft(2, '0')} (Next: ${difference.inMinutes}m)';
+      }
     }
   }
+}
+
+Map<String, dynamic> _parseJson(String text) {
+  return jsonDecode(text) as Map<String, dynamic>;
 }

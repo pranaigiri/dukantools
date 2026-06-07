@@ -52,7 +52,7 @@ class ThemeProvider with ChangeNotifier {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   MyAppState createState() => MyAppState();
@@ -103,7 +103,7 @@ class MyAppState extends State<MyApp> {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   HomePageState createState() => HomePageState();
@@ -113,11 +113,28 @@ class HomePageState extends State<HomePage> {
   final List<Item> items = itemData;
   int crossAxisCount =
       2; // Default crossAxisCount value for extra smaller screens
+  bool _isCompactView = false;
 
   @override
   void initState() {
     super.initState();
     _createInterstitialAd();
+    _loadViewPreference();
+  }
+
+  Future<void> _loadViewPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isCompactView = prefs.getBool('isCompactView') ?? false;
+    });
+  }
+
+  Future<void> _setViewPreference(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isCompactView', value);
+    setState(() {
+      _isCompactView = value;
+    });
   }
 
   InterstitialAd? _interstitialAd;
@@ -175,15 +192,32 @@ class HomePageState extends State<HomePage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final versionCode = VersionCode();
 
-    // Adjust the crossAxisCount based on the screen width
-    if (screenWidth <= 400) {
-      crossAxisCount = 2; // For extra smaller screens
-    } else if (screenWidth <= 600) {
-      crossAxisCount = 2; // For smaller screens
-    } else if (screenWidth <= 1200) {
-      crossAxisCount = 4; // For medium-sized screens
+    // Adjust layout parameters based on compact mode and screen width
+    final double padding = _isCompactView ? 12.0 : 20.0;
+    final double spacing = _isCompactView ? 8.0 : 10.0;
+    final double iconSize = _isCompactView ? 36.0 : 65.0;
+    final double fontSize = _isCompactView ? 13.0 : 16.0;
+
+    if (_isCompactView) {
+      if (screenWidth <= 400) {
+        crossAxisCount = 3;
+      } else if (screenWidth <= 600) {
+        crossAxisCount = 3;
+      } else if (screenWidth <= 1200) {
+        crossAxisCount = 5;
+      } else {
+        crossAxisCount = 8;
+      }
     } else {
-      crossAxisCount = 6; // For larger screens
+      if (screenWidth <= 400) {
+        crossAxisCount = 2;
+      } else if (screenWidth <= 600) {
+        crossAxisCount = 2;
+      } else if (screenWidth <= 1200) {
+        crossAxisCount = 4;
+      } else {
+        crossAxisCount = 6;
+      }
     }
 
     return Scaffold(
@@ -193,7 +227,7 @@ class HomePageState extends State<HomePage> {
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 4.0,
                 spreadRadius: 2.0,
                 offset: const Offset(0, 2),
@@ -216,55 +250,93 @@ class HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(0),
-        child: GridView.builder(
-          padding: const EdgeInsets.all(20),
-          itemCount: items.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () {
-                interstitialAdShow = !interstitialAdShow;
-                interstitialAdShow ? _showInterstitialAd() : null;
-
-                Navigator.pushNamed(
-                  context,
-                  '/itemDetails',
-                  arguments: items[index],
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: items[index].color,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      items[index].iconData,
-                      size: 65,
-                      color: Colors.white,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SegmentedButton<bool>(
+                  style: SegmentedButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  segments: const <ButtonSegment<bool>>[
+                    ButtonSegment<bool>(
+                      value: false,
+                      label: Text('Standard'),
+                      icon: Icon(Icons.grid_view),
                     ),
-                    Text(
-                      items[index].name,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.w500),
+                    ButtonSegment<bool>(
+                      value: true,
+                      label: Text('Compact'),
+                      icon: Icon(Icons.apps),
                     ),
                   ],
+                  selected: <bool>{_isCompactView},
+                  onSelectionChanged: (Set<bool> newSelection) {
+                    _setViewPreference(newSelection.first);
+                  },
                 ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: GridView.builder(
+              padding: EdgeInsets.all(padding),
+              itemCount: items.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: spacing,
+                mainAxisSpacing: spacing,
               ),
-            );
-          },
-        ),
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    interstitialAdShow = !interstitialAdShow;
+                    interstitialAdShow ? _showInterstitialAd() : null;
+
+                    Navigator.pushNamed(
+                      context,
+                      '/itemDetails',
+                      arguments: items[index],
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: items[index].color,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          items[index].iconData,
+                          size: iconSize,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: 4),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: Text(
+                            items[index].name,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
