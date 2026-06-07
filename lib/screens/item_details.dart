@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shop_tools/common/admob_helper.dart';
-import 'package:shop_tools/main.dart';
+import 'package:shop_tools/screens/main_navigation_shell.dart';
 import 'package:shop_tools/models/item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -102,7 +102,7 @@ class _ItemDetailsState extends State<ItemDetails> {
   @override
   Widget build(BuildContext context) {
     if (ModalRoute.of(context)!.settings.arguments == null) {
-      return const HomePage();
+      return const MainNavigationShell();
     } else {
       try {
         final Item item = ModalRoute.of(context)!.settings.arguments as Item;
