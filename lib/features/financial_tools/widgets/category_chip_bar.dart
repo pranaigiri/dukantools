@@ -76,6 +76,28 @@ class _CategoryChipBarState extends State<CategoryChipBar> {
     );
   }
 
+  Color _getCategoryColor(String catId, ThemeData theme) {
+    switch (catId) {
+      case 'kirana':
+        return const Color(0xFFD32F2F);
+      case 'chai':
+        return const Color(0xFFE65100);
+      case 'saree':
+        return const Color(0xFF7B1FA2);
+      case 'medical':
+        return const Color(0xFF00796B);
+      case 'hardware':
+        return const Color(0xFF455A64);
+      case 'mobile':
+        return const Color(0xFF303F9F);
+      case 'others':
+        return const Color(0xFF1976D2);
+      case 'all':
+      default:
+        return theme.colorScheme.primary;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -96,6 +118,7 @@ class _CategoryChipBarState extends State<CategoryChipBar> {
               final String label = cat['label'] as String;
               final IconData icon = cat['icon'] as IconData;
               final isSelected = widget.selectedCategory == catId;
+              final color = _getCategoryColor(catId, theme);
 
               return Padding(
                 key: _keys[index],
@@ -106,7 +129,7 @@ class _CategoryChipBarState extends State<CategoryChipBar> {
                     size: 16,
                     color: isSelected
                         ? Colors.white
-                        : (isDark ? Colors.white70 : Colors.black87),
+                        : color,
                   ),
                   label: Text(
                     label,
@@ -119,11 +142,17 @@ class _CategoryChipBarState extends State<CategoryChipBar> {
                     ),
                   ),
                   selected: isSelected,
-                  selectedColor: theme.colorScheme.primary,
+                  selectedColor: color,
                   backgroundColor:
-                      isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                      isDark ? Colors.grey.shade900 : Colors.grey.shade100,
                   checkmarkColor: Colors.white,
                   showCheckmark: false,
+                  side: BorderSide(
+                    color: isSelected
+                        ? color
+                        : color.withValues(alpha: 0.35),
+                    width: 1.2,
+                  ),
                   onSelected: (bool selected) {
                     if (selected) {
                       widget.onCategorySelected(catId);

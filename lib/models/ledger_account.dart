@@ -40,6 +40,7 @@ class LedgerAccount {
   final String phone;
   final DateTime createdAt;
   final List<LedgerTransaction> transactions;
+  final String? shopId;
 
   LedgerAccount({
     required this.id,
@@ -47,6 +48,7 @@ class LedgerAccount {
     required this.phone,
     required this.createdAt,
     required this.transactions,
+    this.shopId,
   });
 
   double get balance {
@@ -90,6 +92,7 @@ class LedgerAccount {
       'phone': phone,
       'createdAt': createdAt.toIso8601String(),
       'transactions': transactions.map((t) => t.toJson()).toList(),
+      'shopId': shopId,
     };
   }
 
@@ -105,6 +108,7 @@ class LedgerAccount {
           ? DateTime.parse(json['createdAt'] as String)
           : DateTime.now(),
       transactions: txList,
+      shopId: json['shopId'] as String?,
     );
   }
 
@@ -114,6 +118,7 @@ class LedgerAccount {
     String? phone,
     DateTime? createdAt,
     List<LedgerTransaction>? transactions,
+    String? shopId,
   }) {
     return LedgerAccount(
       id: id ?? this.id,
@@ -121,6 +126,7 @@ class LedgerAccount {
       phone: phone ?? this.phone,
       createdAt: createdAt ?? this.createdAt,
       transactions: transactions ?? this.transactions,
+      shopId: shopId ?? this.shopId,
     );
   }
 }

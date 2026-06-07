@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dukan_tools/common/admob_helper.dart';
 import 'package:dukan_tools/data/item_data.dart';
 import 'package:dukan_tools/models/item.dart';
+import 'package:dukan_tools/services/ad_manager.dart';
 
 class CalculatorsTab extends StatefulWidget {
   const CalculatorsTab({super.key});
@@ -16,15 +15,10 @@ class CalculatorsTabState extends State<CalculatorsTab> {
   final List<Item> items = itemData;
   int crossAxisCount = 2;
   bool _isCompactView = false;
-  InterstitialAd? _interstitialAd;
-  final int maxFailedLoadAttempts = 3;
-  int _interstitialLoadAttempts = 0;
-  bool interstitialAdShow = true;
 
   @override
   void initState() {
     super.initState();
-    _createInterstitialAd();
     _loadViewPreference();
   }
 
@@ -41,50 +35,6 @@ class CalculatorsTabState extends State<CalculatorsTab> {
     setState(() {
       _isCompactView = value;
     });
-  }
-
-  Future<void> _createInterstitialAd() async {
-    await InterstitialAd.load(
-      adUnitId: AdMobHelper.interstitialUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (InterstitialAd ad) {
-          _interstitialAd = ad;
-          _interstitialLoadAttempts = 0;
-        },
-        onAdFailedToLoad: (LoadAdError error) {
-          _interstitialLoadAttempts += 1;
-          _interstitialAd = null;
-          if (_interstitialLoadAttempts <= maxFailedLoadAttempts) {
-            _createInterstitialAd();
-          }
-        },
-      ),
-    );
-  }
-
-  void _showInterstitialAd() {
-    if (_interstitialAd != null) {
-      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-        onAdDismissedFullScreenContent: (InterstitialAd ad) {
-          ad.dispose();
-          _createInterstitialAd();
-        },
-        onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
-          ad.dispose();
-          _createInterstitialAd();
-        },
-      );
-      _interstitialAd!.show();
-    } else {
-      _createInterstitialAd();
-    }
-  }
-
-  @override
-  void dispose() {
-    _interstitialAd?.dispose();
-    super.dispose();
   }
 
   @override
@@ -162,15 +112,15 @@ class CalculatorsTabState extends State<CalculatorsTab> {
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () {
-                  interstitialAdShow = !interstitialAdShow;
-                  if (interstitialAdShow) {
-                    _showInterstitialAd();
-                  }
-
-                  Navigator.pushNamed(
-                    context,
-                    '/itemDetails',
-                    arguments: items[index],
+                  AdManager.instance.incrementMeaningfulActions();
+                  AdManager.instance.showInterstitialAd(
+                    onDismissed: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/itemDetails',
+                        arguments: items[index],
+                      );
+                    },
                   );
                 },
                 child: Container(

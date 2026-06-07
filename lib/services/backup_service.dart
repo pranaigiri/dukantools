@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:dukan_tools/models/ledger_account.dart';
 import 'package:dukan_tools/models/pl_entry.dart';
+import 'package:dukan_tools/models/shop.dart';
 
 class BackupService {
   static const String backupFileName = 'dukantools_ledger_backup.json';
@@ -60,16 +61,18 @@ class BackupService {
   static Future<bool> backupData({
     required List<LedgerAccount> accounts,
     required List<PLEntry> plEntries,
+    List<Shop>? shops,
   }) async {
     try {
       // Request permissions
       await requestStoragePermission();
 
       final backupData = {
-        'version': 1,
+        'version': 2,
         'timestamp': DateTime.now().toIso8601String(),
         'ledger': accounts.map((a) => a.toJson()).toList(),
         'p_and_l': plEntries.map((e) => e.toJson()).toList(),
+        'shops': (shops ?? []).map((s) => s.toJson()).toList(),
       };
 
       final jsonString = jsonEncode(backupData);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dukan_tools/providers/data_provider.dart';
 import 'package:dukan_tools/screens/ledger_detail_screen.dart';
+import 'package:dukan_tools/models/shop.dart';
 
 class LedgerTab extends StatefulWidget {
   const LedgerTab({super.key});
@@ -37,6 +38,9 @@ class _LedgerTabState extends State<LedgerTab> {
     return Scaffold(
       body: Column(
         children: [
+          // Shop Selector Bar
+          _buildShopSelector(context, theme, dataProvider),
+
           // Receivables vs Payables Header Card
           _buildSummaryHeaderCard(theme, dataProvider),
 
@@ -317,6 +321,396 @@ class _LedgerTabState extends State<LedgerTab> {
                 }
               },
               child: const Text("Add"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildShopSelector(BuildContext context, ThemeData theme, DataProvider provider) {
+    final activeShop = provider.activeShop;
+    
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () => _showShopSelectorBottomSheet(context, provider),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: theme.brightness == Brightness.dark
+                      ? const Color(0xFF1E1E2C)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: theme.dividerColor.withOpacity(0.08),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.storefront,
+                        color: theme.colorScheme.primary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Active Shop",
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            activeShop.name,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.grey[600],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          IconButton(
+            onPressed: () => _showManageShopsDialog(context, provider),
+            icon: const Icon(Icons.settings),
+            tooltip: "Manage Shops",
+            style: IconButton.styleFrom(
+              backgroundColor: theme.brightness == Brightness.dark
+                  ? const Color(0xFF1E1E2C)
+                  : Colors.grey.withOpacity(0.08),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showShopSelectorBottomSheet(BuildContext context, DataProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        final theme = Theme.of(context);
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Switch Shop",
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showAddShopDialog(context, provider);
+                    },
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text("New Shop", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: provider.shops.length,
+                  itemBuilder: (context, index) {
+                    final shop = provider.shops[index];
+                    final isSelected = shop.id == provider.activeShopId;
+                    
+                    return Card(
+                      elevation: 0,
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      color: isSelected 
+                          ? theme.colorScheme.primary.withOpacity(0.08)
+                          : Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: isSelected
+                              ? theme.colorScheme.primary.withOpacity(0.2)
+                              : theme.dividerColor.withOpacity(0.08),
+                        ),
+                      ),
+                      child: ListTile(
+                        onTap: () {
+                          provider.setActiveShop(shop.id);
+                          Navigator.pop(context);
+                        },
+                        leading: CircleAvatar(
+                          backgroundColor: isSelected
+                              ? theme.colorScheme.primary.withOpacity(0.2)
+                              : Colors.grey.withOpacity(0.1),
+                          child: Icon(
+                            Icons.storefront,
+                            color: isSelected ? theme.colorScheme.primary : Colors.grey,
+                          ),
+                        ),
+                        title: Text(
+                          shop.name,
+                          style: TextStyle(
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
+                            : null,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddShopDialog(BuildContext context, DataProvider provider) {
+    final formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text("Create New Shop", style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: "Shop Name *",
+                prefixIcon: Icon(Icons.storefront),
+              ),
+              validator: (val) {
+                if (val == null || val.trim().isEmpty) {
+                  return "Please enter a shop name";
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  provider.addShop(nameController.text.trim());
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text("Create"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showManageShopsDialog(BuildContext context, DataProvider provider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Row(
+                children: [
+                  Icon(Icons.storefront, color: Colors.blue),
+                  SizedBox(width: 8),
+                  Text("Manage Shops", style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: provider.shops.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final shop = provider.shops[index];
+                    
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(shop.name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined, color: Colors.blue, size: 20),
+                            onPressed: () {
+                              _showEditShopNameDialog(context, provider, shop);
+                            },
+                          ),
+                          if (provider.shops.length > 1)
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                              onPressed: () {
+                                _confirmDeleteShop(context, provider, shop);
+                              },
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Close"),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showAddShopDialog(context, provider);
+                  },
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text("Add Shop"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showEditShopNameDialog(BuildContext context, DataProvider provider, Shop shop) {
+    final formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController(text: shop.name);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text("Rename Shop", style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: "New Shop Name *",
+                prefixIcon: Icon(Icons.storefront),
+              ),
+              validator: (val) {
+                if (val == null || val.trim().isEmpty) {
+                  return "Please enter a shop name";
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  provider.updateShopName(shop.id, nameController.text.trim());
+                  Navigator.pop(context); // Close rename dialog
+                  Navigator.pop(context); // Close manage dialog
+                }
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteShop(BuildContext context, DataProvider provider, Shop shop) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text("Delete Shop?", style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Text("Are you sure you want to delete '${shop.name}'? All customer accounts and ledger transaction history under this shop will be permanently deleted."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+              onPressed: () {
+                provider.deleteShop(shop.id);
+                Navigator.pop(context); // Close confirm dialog
+                Navigator.pop(context); // Close manage dialog
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Shop '${shop.name}' and its accounts deleted")),
+                );
+              },
+              child: const Text("Delete"),
             ),
           ],
         );

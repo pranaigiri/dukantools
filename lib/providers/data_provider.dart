@@ -1,19 +1,29 @@
 import 'package:flutter/foundation.dart';
 import 'package:dukan_tools/models/ledger_account.dart';
 import 'package:dukan_tools/models/pl_entry.dart';
+import 'package:dukan_tools/models/shop.dart';
 import 'package:dukan_tools/services/backup_service.dart';
 import 'package:dukan_tools/services/database_service.dart';
 
 class DataProvider with ChangeNotifier {
   List<PLEntry> _plEntries = [];
   List<LedgerAccount> _ledgerAccounts = [];
+  List<Shop> _shops = [];
+  String _activeShopId = 'default_shop';
   bool _isLoading = true;
   String? _restoreMessage;
 
   List<PLEntry> get plEntries => _plEntries;
-  List<LedgerAccount> get ledgerAccounts => _ledgerAccounts;
+  List<LedgerAccount> get ledgerAccounts =>
+      _ledgerAccounts.where((acc) => acc.shopId == _activeShopId).toList();
+  List<Shop> get shops => _shops;
+  String get activeShopId => _activeShopId;
   bool get isLoading => _isLoading;
   String? get restoreMessage => _restoreMessage;
+
+  Shop get activeShop {
+    return _shops.firstWhere((s) => s.id == _activeShopId, orElse: () => _shops.first);
+  }
 
   DataProvider() {
     _loadInitialData();
@@ -50,9 +60,10 @@ class DataProvider with ChangeNotifier {
   Future<void> _loadFromDatabase() async {
     final plBox = DatabaseService.plBox;
     final ledgerBox = DatabaseService.ledgerBox;
+    final shopsBox = DatabaseService.shopsBox;
 
     // Check if DB is empty to run auto-restore
-    if (plBox.isEmpty && ledgerBox.isEmpty) {
+    if (plBox.isEmpty && ledgerBox.isEmpty && shopsBox.isEmpty) {
       try {
         final backupData = await BackupService.scanAndRestore();
         if (backupData != null) {
@@ -61,6 +72,13 @@ class DataProvider with ChangeNotifier {
           for (var item in plList) {
             final entry = PLEntry.fromJson(item as Map);
             await plBox.put(entry.id, entry.toJson());
+          }
+
+          // Restore Shops
+          final shopsList = backupData['shops'] as List? ?? [];
+          for (var item in shopsList) {
+            final shop = Shop.fromJson(item as Map);
+            await shopsBox.put(shop.id, shop.toJson());
           }
 
           // Restore Ledger Accounts
@@ -77,22 +95,139 @@ class DataProvider with ChangeNotifier {
       }
     }
 
+    // Load Shops
+    _shops = shopsBox.keys
+        .where((key) => key != 'active_shop_id')
+        .map((key) => Shop.fromJson(Map<dynamic, dynamic>.from(shopsBox.get(key) as Map)))
+        .toList();
+
+    String? activeId = shopsBox.get('active_shop_id') as String?;
+
+    if (_shops.isEmpty) {
+      final defaultShop = Shop(
+        id: 'default_shop',
+        name: 'My Shop',
+        createdAt: DateTime.now(),
+      );
+      await shopsBox.put(defaultShop.id, defaultShop.toJson());
+      _shops.add(defaultShop);
+      activeId = defaultShop.id;
+      await shopsBox.put('active_shop_id', activeId);
+    }
+
+    _activeShopId = activeId ?? _shops.first.id;
+
     // Load P&L Entries
     _plEntries = plBox.values
         .map((e) => PLEntry.fromJson(Map<dynamic, dynamic>.from(e as Map)))
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date)); // Newest first
 
-    // Load Ledger Accounts
-    _ledgerAccounts = ledgerBox.values
+    // Load Ledger Accounts & Run Migration if needed
+    final rawAccounts = ledgerBox.values
         .map((e) => LedgerAccount.fromJson(Map<dynamic, dynamic>.from(e as Map)))
         .toList();
+
+    bool needsMigration = false;
+    _ledgerAccounts = [];
+    for (var acc in rawAccounts) {
+      if (acc.shopId == null) {
+        final migratedAcc = acc.copyWith(shopId: 'default_shop');
+        await ledgerBox.put(migratedAcc.id, migratedAcc.toJson());
+        _ledgerAccounts.add(migratedAcc);
+        needsMigration = true;
+      } else {
+        _ledgerAccounts.add(acc);
+      }
+    }
+
+    if (needsMigration) {
+      _triggerBackup();
+    }
   }
 
   // Clear restore message after showing it
   void clearRestoreMessage() {
     _restoreMessage = null;
     notifyListeners();
+  }
+
+  // --- Shop Management ---
+  Future<void> addShop(String name) async {
+    final newShop = Shop(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: name,
+      createdAt: DateTime.now(),
+    );
+    _shops.add(newShop);
+    await DatabaseService.shopsBox.put(newShop.id, newShop.toJson());
+    // Automatically switch to the newly created shop
+    _activeShopId = newShop.id;
+    await DatabaseService.shopsBox.put('active_shop_id', _activeShopId);
+    notifyListeners();
+    _triggerBackup();
+  }
+
+  Future<void> updateShopName(String shopId, String newName) async {
+    final idx = _shops.indexWhere((s) => s.id == shopId);
+    if (idx != -1) {
+      final updatedShop = Shop(
+        id: shopId,
+        name: newName,
+        createdAt: _shops[idx].createdAt,
+      );
+      _shops[idx] = updatedShop;
+      await DatabaseService.shopsBox.put(shopId, updatedShop.toJson());
+      notifyListeners();
+      _triggerBackup();
+    }
+  }
+
+  Future<void> deleteShop(String shopId) async {
+    if (_shops.length <= 1) {
+      // Cannot delete the only shop
+      return;
+    }
+    
+    // Delete the shop
+    _shops.removeWhere((s) => s.id == shopId);
+    await DatabaseService.shopsBox.delete(shopId);
+
+    // Delete all ledger accounts belonging to this shop
+    final accountsToDelete = _ledgerAccounts.where((a) => a.shopId == shopId).toList();
+    for (var acc in accountsToDelete) {
+      await DatabaseService.ledgerBox.delete(acc.id);
+    }
+    _ledgerAccounts.removeWhere((a) => a.shopId == shopId);
+
+    // If active shop was deleted, switch to the first remaining shop
+    if (_activeShopId == shopId) {
+      _activeShopId = _shops.first.id;
+      await DatabaseService.shopsBox.put('active_shop_id', _activeShopId);
+    }
+
+    notifyListeners();
+    _triggerBackup();
+  }
+
+  Future<void> setActiveShop(String shopId) async {
+    if (_shops.any((s) => s.id == shopId)) {
+      _activeShopId = shopId;
+      await DatabaseService.shopsBox.put('active_shop_id', shopId);
+      notifyListeners();
+    }
+  }
+
+  // --- Helpers ---
+  LedgerAccount? getAccountById(String accountId) {
+    final idx = _ledgerAccounts.indexWhere((a) => a.id == accountId);
+    return idx != -1 ? _ledgerAccounts[idx] : null;
+  }
+
+  String getShopNameForAccount(LedgerAccount account) {
+    if (account.shopId == null) return "My Shop";
+    final shop = _shops.firstWhere((s) => s.id == account.shopId, orElse: () => _shops.first);
+    return shop.name;
   }
 
   // --- Day Book CRUD ---
@@ -128,6 +263,7 @@ class DataProvider with ChangeNotifier {
       phone: phone,
       createdAt: DateTime.now(),
       transactions: [],
+      shopId: _activeShopId,
     );
     _ledgerAccounts.add(newAcc);
     await DatabaseService.ledgerBox.put(newAcc.id, newAcc.toJson());
@@ -202,6 +338,7 @@ class DataProvider with ChangeNotifier {
     return await BackupService.backupData(
       accounts: _ledgerAccounts,
       plEntries: _plEntries,
+      shops: _shops,
     );
   }
 
@@ -210,6 +347,7 @@ class DataProvider with ChangeNotifier {
     BackupService.backupData(
       accounts: _ledgerAccounts,
       plEntries: _plEntries,
+      shops: _shops,
     );
   }
 
@@ -233,20 +371,20 @@ class DataProvider with ChangeNotifier {
   // Ledger Stats
   // Receivables: sum of positive balances (where customer owes us money)
   double get totalReceivables {
-    return _ledgerAccounts
+    return ledgerAccounts
         .where((a) => a.balance > 0)
         .fold(0.0, (sum, item) => sum + item.balance);
   }
 
   // Payables: sum of absolute negative balances (where we owe customer money)
   double get totalPayables {
-    return _ledgerAccounts
+    return ledgerAccounts
         .where((a) => a.balance < 0)
         .fold(0.0, (sum, item) => sum + item.balance.abs());
   }
 
   List<LedgerAccount> get topActiveAccounts {
-    final list = List<LedgerAccount>.from(_ledgerAccounts);
+    final list = List<LedgerAccount>.from(ledgerAccounts);
     // Sort by transaction count, then by balance magnitude
     list.sort((a, b) {
       int cmp = b.transactions.length.compareTo(a.transactions.length);

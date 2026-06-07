@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:dukan_tools/providers/data_provider.dart';
 import 'package:dukan_tools/models/ledger_account.dart';
@@ -16,14 +17,13 @@ class LedgerDetailScreen extends StatelessWidget {
     final dataProvider = Provider.of<DataProvider>(context);
     final theme = Theme.of(context);
 
-    final accountIndex = dataProvider.ledgerAccounts.indexWhere((a) => a.id == accountId);
-    if (accountIndex == -1) {
+    final account = dataProvider.getAccountById(accountId);
+    if (account == null) {
       return Scaffold(
         appBar: AppBar(title: const Text("Account Details")),
         body: const Center(child: Text("Account not found")),
       );
     }
-    final account = dataProvider.ledgerAccounts[accountIndex];
     final balance = account.balance;
     final transactions = List<LedgerTransaction>.from(account.transactions)
       ..sort((a, b) => b.date.compareTo(a.date)); // Newest first
@@ -133,13 +133,14 @@ class LedgerDetailScreen extends StatelessWidget {
 
   Widget _buildContactActionBar(BuildContext context, ThemeData theme, DataProvider provider, LedgerAccount account) {
     final balance = account.balance;
+    final shopName = provider.getShopNameForAccount(account);
     String message = '';
     if (balance > 0) {
-      message = "Dear ${account.name},\n\nYour outstanding balance on DukanTools is ₹${balance.toStringAsFixed(2)}. Please settle this receivable soon.\n\nThank you!";
+      message = "Dear ${account.name},\n\nYour outstanding balance on $shopName is ₹${balance.toStringAsFixed(2)}. Please settle this receivable soon.\n\nThank you!";
     } else if (balance < 0) {
       message = "Dear ${account.name},\n\nWe have a pending payable amount of ₹${balance.abs().toStringAsFixed(2)} to you. We will settle it soon.\n\nThank you!";
     } else {
-      message = "Dear ${account.name},\n\nYour account is settled with DukanTools.\n\nThank you!";
+      message = "Dear ${account.name},\n\nYour account is settled with $shopName.\n\nThank you!";
     }
 
     if (account.phone.isEmpty) {
@@ -686,6 +687,8 @@ class LedgerDetailScreen extends StatelessWidget {
   }
 
   void _shareReminder(BuildContext context, LedgerAccount account) {
+    final provider = Provider.of<DataProvider>(context, listen: false);
+    final shopName = provider.getShopNameForAccount(account);
     final balance = account.balance;
     if (balance == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -696,7 +699,7 @@ class LedgerDetailScreen extends StatelessWidget {
 
     String message = '';
     if (balance > 0) {
-      message = "Dear ${account.name},\n\nYour outstanding balance on DukanTools is ₹${balance.toStringAsFixed(2)}. Please settle this receivable soon.\n\nThank you!";
+      message = "Dear ${account.name},\n\nYour outstanding balance on $shopName is ₹${balance.toStringAsFixed(2)}. Please settle this receivable soon.\n\nThank you!";
     } else {
       message = "Dear ${account.name},\n\nWe have a pending payable amount of ₹${balance.abs().toStringAsFixed(2)} to you. We will settle it soon.\n\nThank you!";
     }
@@ -744,7 +747,7 @@ class LedgerDetailScreen extends StatelessWidget {
   }
 
   void importCopy(String text, BuildContext context) {
-    // Write copy logic here
+    Clipboard.setData(ClipboardData(text: text));
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Reminder copied to clipboard!')),

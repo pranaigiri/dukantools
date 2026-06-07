@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dukan_tools/models/item.dart';
+import 'package:dukan_tools/services/ad_manager.dart';
 
 import '../models/tool_config.dart';
 import '../models/legacy_card_config.dart';
@@ -192,14 +193,19 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
       );
     }
 
-    await Navigator.pushNamed(
-      context,
-      '/itemDetails',
-      arguments: routeItem,
-    );
+    AdManager.instance.incrementMeaningfulActions();
+    AdManager.instance.showInterstitialAd(
+      onDismissed: () async {
+        await Navigator.pushNamed(
+          context,
+          '/itemDetails',
+          arguments: routeItem,
+        );
 
-    // Refresh expiry warnings when returning
-    _loadExpiryWarnings();
+        // Refresh expiry warnings when returning
+        _loadExpiryWarnings();
+      },
+    );
   }
 
   void _navigateToExpiryTracker() {
