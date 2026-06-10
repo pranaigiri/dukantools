@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:dukan_tools/providers/data_provider.dart';
 import 'package:dukan_tools/screens/ledger_detail_screen.dart';
 import 'package:dukan_tools/models/shop.dart';
+import 'package:dukan_tools/l10n/app_localizations.dart';
 
 class LedgerTab extends StatefulWidget {
   const LedgerTab({super.key});
@@ -25,6 +26,7 @@ class _LedgerTabState extends State<LedgerTab> {
   Widget build(BuildContext context) {
     final dataProvider = Provider.of<DataProvider>(context);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     if (dataProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -50,7 +52,7 @@ class _LedgerTabState extends State<LedgerTab> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: "Search customer or phone...",
+                hintText: l10n.searchCustomerOrPhone,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -95,12 +97,13 @@ class _LedgerTabState extends State<LedgerTab> {
         heroTag: 'ledger_add_customer_fab',
         onPressed: () => _showAddCustomerDialog(context, dataProvider),
         icon: const Icon(Icons.person_add_alt_1),
-        label: const Text("Add Customer"),
+        label: Text(l10n.addCustomer),
       ),
     );
   }
 
   Widget _buildSummaryHeaderCard(ThemeData theme, DataProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.all(16),
@@ -127,7 +130,7 @@ class _LedgerTabState extends State<LedgerTab> {
             child: Column(
               children: [
                 Text(
-                  "You Will Get",
+                  l10n.youWillGet,
                   style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                 ),
                 const SizedBox(height: 4),
@@ -146,7 +149,7 @@ class _LedgerTabState extends State<LedgerTab> {
             child: Column(
               children: [
                 Text(
-                  "You Will Give",
+                  l10n.youWillGive,
                   style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                 ),
                 const SizedBox(height: 4),
@@ -166,6 +169,7 @@ class _LedgerTabState extends State<LedgerTab> {
   }
 
   Widget _buildEmptyState(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -173,14 +177,14 @@ class _LedgerTabState extends State<LedgerTab> {
           Icon(Icons.people_outline, size: 48, color: Colors.grey.withOpacity(0.5)),
           const SizedBox(height: 12),
           Text(
-            _searchQuery.isEmpty ? "No customers added yet" : "No results match your search",
+            _searchQuery.isEmpty ? l10n.noCustomersAddedYet : l10n.noResultsMatchYourSearch,
             style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 4),
           Text(
             _searchQuery.isEmpty
-                ? "Tap 'Add Customer' to start logging credit entries."
-                : "Try a different search query.",
+                ? l10n.tapAddCustomerToStartLoggingCreditEntries
+                : l10n.tryADifferentSearchQuery,
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ],
@@ -189,19 +193,20 @@ class _LedgerTabState extends State<LedgerTab> {
   }
 
   Widget _buildAccountItem(ThemeData theme, var acc, DataProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
     final balance = acc.balance;
     Color balColor = Colors.grey;
-    String balText = "Settled";
-    String label = "Balance";
+    String balText = l10n.settled;
+    String label = l10n.netBalance;
 
     if (balance > 0) {
       balColor = Colors.green;
       balText = "₹${balance.toStringAsFixed(2)}";
-      label = "You will get";
+      label = l10n.youWillGet;
     } else if (balance < 0) {
       balColor = Colors.red;
       balText = "₹${balance.abs().toStringAsFixed(2)}";
-      label = "You will give";
+      label = l10n.youWillGive;
     }
 
     return Card(
@@ -235,7 +240,7 @@ class _LedgerTabState extends State<LedgerTab> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          acc.phone.isNotEmpty ? acc.phone : 'No phone number',
+          acc.phone.isNotEmpty ? acc.phone : l10n.noPhoneNumber,
           style: TextStyle(color: Colors.grey[600], fontSize: 13),
         ),
         trailing: Column(
@@ -268,13 +273,14 @@ class _LedgerTabState extends State<LedgerTab> {
     final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController();
     final phoneController = TextEditingController();
+    final l10n = AppLocalizations.of(context)!;
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text("Add New Customer Account", style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(l10n.addNewCustomerAccount, style: const TextStyle(fontWeight: FontWeight.bold)),
           content: Form(
             key: formKey,
             child: Column(
@@ -282,13 +288,13 @@ class _LedgerTabState extends State<LedgerTab> {
               children: [
                 TextFormField(
                   controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: "Name *",
-                    prefixIcon: Icon(Icons.person),
+                  decoration: InputDecoration(
+                    labelText: l10n.name,
+                    prefixIcon: const Icon(Icons.person),
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return "Please enter a name";
+                      return l10n.pleaseEnterAName;
                     }
                     return null;
                   },
@@ -297,9 +303,9 @@ class _LedgerTabState extends State<LedgerTab> {
                 TextFormField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: "Phone (Optional)",
-                    prefixIcon: Icon(Icons.phone),
+                  decoration: InputDecoration(
+                    labelText: l10n.phoneOptional,
+                    prefixIcon: const Icon(Icons.phone),
                   ),
                 ),
               ],
@@ -308,7 +314,7 @@ class _LedgerTabState extends State<LedgerTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               onPressed: () {
@@ -320,7 +326,7 @@ class _LedgerTabState extends State<LedgerTab> {
                   Navigator.pop(context);
                 }
               },
-              child: const Text("Add"),
+              child: Text(l10n.addButton),
             ),
           ],
         );
@@ -330,6 +336,7 @@ class _LedgerTabState extends State<LedgerTab> {
 
   Widget _buildShopSelector(BuildContext context, ThemeData theme, DataProvider provider) {
     final activeShop = provider.activeShop;
+    final l10n = AppLocalizations.of(context)!;
     
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -377,7 +384,7 @@ class _LedgerTabState extends State<LedgerTab> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Active Shop",
+                            l10n.activeShop,
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: Colors.grey,
                             ),
@@ -407,7 +414,7 @@ class _LedgerTabState extends State<LedgerTab> {
           IconButton(
             onPressed: () => _showManageShopsDialog(context, provider),
             icon: const Icon(Icons.settings),
-            tooltip: "Manage Shops",
+            tooltip: l10n.manageShops,
             style: IconButton.styleFrom(
               backgroundColor: theme.brightness == Brightness.dark
                   ? const Color(0xFF1E1E2C)
@@ -431,6 +438,7 @@ class _LedgerTabState extends State<LedgerTab> {
       ),
       builder: (context) {
         final theme = Theme.of(context);
+        final l10n = AppLocalizations.of(context)!;
         return Container(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -452,7 +460,7 @@ class _LedgerTabState extends State<LedgerTab> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Switch Shop",
+                    l10n.switchShop,
                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   TextButton.icon(
@@ -461,7 +469,7 @@ class _LedgerTabState extends State<LedgerTab> {
                       _showAddShopDialog(context, provider);
                     },
                     icon: const Icon(Icons.add, size: 18),
-                    label: const Text("New Shop", style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: Text(l10n.newShop, style: const TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -531,20 +539,21 @@ class _LedgerTabState extends State<LedgerTab> {
     showDialog(
       context: context,
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text("Create New Shop", style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(l10n.createNewShop, style: const TextStyle(fontWeight: FontWeight.bold)),
           content: Form(
             key: formKey,
             child: TextFormField(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "Shop Name *",
-                prefixIcon: Icon(Icons.storefront),
+              decoration: InputDecoration(
+                labelText: l10n.shopName,
+                prefixIcon: const Icon(Icons.storefront),
               ),
               validator: (val) {
                 if (val == null || val.trim().isEmpty) {
-                  return "Please enter a shop name";
+                  return l10n.pleaseEnterAShopName;
                 }
                 return null;
               },
@@ -553,7 +562,7 @@ class _LedgerTabState extends State<LedgerTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               onPressed: () {
@@ -562,7 +571,7 @@ class _LedgerTabState extends State<LedgerTab> {
                   Navigator.pop(context);
                 }
               },
-              child: const Text("Create"),
+              child: Text(l10n.create),
             ),
           ],
         );
@@ -574,15 +583,16 @@ class _LedgerTabState extends State<LedgerTab> {
     showDialog(
       context: context,
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: const Row(
+              title: Row(
                 children: [
-                  Icon(Icons.storefront, color: Colors.blue),
-                  SizedBox(width: 8),
-                  Text("Manage Shops", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Icon(Icons.storefront, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Text(l10n.manageShops, style: const TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
               content: SizedBox(
@@ -622,7 +632,7 @@ class _LedgerTabState extends State<LedgerTab> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Close"),
+                  child: Text(l10n.close),
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
@@ -630,7 +640,7 @@ class _LedgerTabState extends State<LedgerTab> {
                     _showAddShopDialog(context, provider);
                   },
                   icon: const Icon(Icons.add, size: 16),
-                  label: const Text("Add Shop"),
+                  label: Text(l10n.addShop),
                 ),
               ],
             );
@@ -647,20 +657,21 @@ class _LedgerTabState extends State<LedgerTab> {
     showDialog(
       context: context,
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text("Rename Shop", style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(l10n.renameShop, style: const TextStyle(fontWeight: FontWeight.bold)),
           content: Form(
             key: formKey,
             child: TextFormField(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "New Shop Name *",
-                prefixIcon: Icon(Icons.storefront),
+              decoration: InputDecoration(
+                labelText: l10n.newShopName,
+                prefixIcon: const Icon(Icons.storefront),
               ),
               validator: (val) {
                 if (val == null || val.trim().isEmpty) {
-                  return "Please enter a shop name";
+                  return l10n.pleaseEnterAShopName;
                 }
                 return null;
               },
@@ -669,7 +680,7 @@ class _LedgerTabState extends State<LedgerTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               onPressed: () {
@@ -679,7 +690,7 @@ class _LedgerTabState extends State<LedgerTab> {
                   Navigator.pop(context); // Close manage dialog
                 }
               },
-              child: const Text("Save"),
+              child: Text(l10n.save),
             ),
           ],
         );
@@ -691,14 +702,15 @@ class _LedgerTabState extends State<LedgerTab> {
     showDialog(
       context: context,
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text("Delete Shop?", style: TextStyle(fontWeight: FontWeight.bold)),
-          content: Text("Are you sure you want to delete '${shop.name}'? All customer accounts and ledger transaction history under this shop will be permanently deleted."),
+          title: Text(l10n.deleteShop, style: const TextStyle(fontWeight: FontWeight.bold)),
+          content: Text(l10n.deleteShopConfirmation(shop.name)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
@@ -707,10 +719,10 @@ class _LedgerTabState extends State<LedgerTab> {
                 Navigator.pop(context); // Close confirm dialog
                 Navigator.pop(context); // Close manage dialog
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Shop '${shop.name}' and its accounts deleted")),
+                  SnackBar(content: Text(l10n.shopAndAccountsDeleted(shop.name))),
                 );
               },
-              child: const Text("Delete"),
+              child: Text(l10n.delete),
             ),
           ],
         );

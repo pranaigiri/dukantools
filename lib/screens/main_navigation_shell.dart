@@ -6,6 +6,8 @@ import 'package:dukan_tools/screens/dashboard_tab.dart';
 import 'package:dukan_tools/screens/day_book_tab.dart';
 import 'package:dukan_tools/screens/ledger_tab.dart';
 import 'package:dukan_tools/features/financial_tools/screens/financial_tools_screen.dart';
+import 'package:dukan_tools/l10n/app_localizations.dart';
+import 'package:dukan_tools/providers/locale_provider.dart';
 
 class MainNavigationShell extends StatefulWidget {
   const MainNavigationShell({super.key});
@@ -21,13 +23,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   /// This avoids building all 4 heavy tabs simultaneously (was causing 747
   /// skipped frames).
   final Set<int> _initializedTabs = {0}; // Tab 0 (dashboard) always built
-
-  final List<String> _titles = const [
-    "Overview Insights",
-    "Day Book / Daily P&L",
-    "Digital Ledger / Khata",
-    "Financial Toolset",
-  ];
 
   Widget _buildTab(int index) {
     switch (index) {
@@ -47,8 +42,17 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
     final theme = Theme.of(context);
     final versionCode = VersionCode();
+    final l10n = AppLocalizations.of(context)!;
+
+    final List<String> titles = [
+      l10n.overviewInsights,
+      l10n.dayBookDailyPL,
+      l10n.digitalLedgerKhata,
+      l10n.financialToolset,
+    ];
 
     return Scaffold(
       appBar: PreferredSize(
@@ -65,7 +69,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             ],
           ),
           child: AppBar(
-            title: Text(_titles[_currentIndex]),
+            title: Text(titles[_currentIndex]),
             actions: [
               IconButton(
                 onPressed: () {
@@ -92,10 +96,10 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               errorBuilder: (context, error, stackTrace) =>
                   const Icon(Icons.shop, size: 80, color: Colors.blue),
             ),
-            const Text(
-              "Dukan Tools",
+            Text(
+              l10n.dukanTools,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             FutureBuilder<String>(
               future: versionCode.getVersionCode(),
@@ -112,7 +116,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                   return const Text('-', textAlign: TextAlign.center);
                 } else {
                   return Text(
-                    'Version: ${snapshot.data}',
+                    '${l10n.version}: ${snapshot.data}',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                     textAlign: TextAlign.center,
                   );
@@ -123,11 +127,45 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             const Divider(color: Colors.black12, thickness: 0.5),
             ListTile(
               leading: const Icon(Icons.info_outline),
-              title: const Text('About Us'),
+              title: Text(l10n.aboutUs),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(context, '/about-us');
               },
+            ),
+            const Divider(color: Colors.black12, thickness: 0.5),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                children: [
+                  const Icon(Icons.language, color: Colors.grey),
+                  const SizedBox(width: 16),
+                  Text(
+                    l10n.selectLanguage,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  const Spacer(),
+                  DropdownButton<String>(
+                    value: localeProvider.locale.languageCode,
+                    underline: const SizedBox(),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'en',
+                        child: Text('English'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'hi',
+                        child: Text('हिन्दी'),
+                      ),
+                    ],
+                    onChanged: (String? value) {
+                      if (value != null) {
+                        localeProvider.setLocale(Locale(value));
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -165,26 +203,26 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               _currentIndex = index;
             });
           },
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard),
-              label: 'Overview',
+              icon: const Icon(Icons.dashboard_outlined),
+              activeIcon: const Icon(Icons.dashboard),
+              label: l10n.overview,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.book_outlined),
-              activeIcon: Icon(Icons.book),
-              label: 'Day Book',
+              icon: const Icon(Icons.book_outlined),
+              activeIcon: const Icon(Icons.book),
+              label: l10n.dayBook,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance_wallet_outlined),
-              activeIcon: Icon(Icons.account_balance_wallet),
-              label: 'Ledger',
+              icon: const Icon(Icons.account_balance_wallet_outlined),
+              activeIcon: const Icon(Icons.account_balance_wallet),
+              label: l10n.ledger,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.calculate_outlined),
-              activeIcon: Icon(Icons.calculate),
-              label: 'Calculators',
+              icon: const Icon(Icons.calculate_outlined),
+              activeIcon: const Icon(Icons.calculate),
+              label: l10n.calculators,
             ),
           ],
         ),

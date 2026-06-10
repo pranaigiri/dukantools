@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dukan_tools/data/item_data.dart';
 import 'package:dukan_tools/models/item.dart';
 import 'package:dukan_tools/services/ad_manager.dart';
+import 'package:dukan_tools/l10n/app_localizations.dart';
+import 'package:dukan_tools/common/localizations_helper.dart';
 
 class CalculatorsTab extends StatefulWidget {
   const CalculatorsTab({super.key});
@@ -40,6 +42,7 @@ class CalculatorsTabState extends State<CalculatorsTab> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final l10n = AppLocalizations.of(context)!;
 
     // Adjust layout parameters based on compact mode and screen width
     final double padding = _isCompactView ? 12.0 : 20.0;
@@ -80,16 +83,16 @@ class CalculatorsTabState extends State<CalculatorsTab> {
                 style: SegmentedButton.styleFrom(
                   visualDensity: VisualDensity.compact,
                 ),
-                segments: const <ButtonSegment<bool>>[
+                segments: <ButtonSegment<bool>>[
                   ButtonSegment<bool>(
                     value: false,
-                    label: Text('Standard'),
-                    icon: Icon(Icons.grid_view),
+                    label: Text(l10n.standard),
+                    icon: const Icon(Icons.grid_view),
                   ),
                   ButtonSegment<bool>(
                     value: true,
-                    label: Text('Compact'),
-                    icon: Icon(Icons.apps),
+                    label: Text(l10n.compact),
+                    icon: const Icon(Icons.apps),
                   ),
                 ],
                 selected: <bool>{_isCompactView},
@@ -140,7 +143,7 @@ class CalculatorsTabState extends State<CalculatorsTab> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: Text(
-                          items[index].name,
+                          LocalizationsHelper.translate(context, items[index].name),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,

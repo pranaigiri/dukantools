@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dukan_tools/common/localizations_helper.dart';
 
 class CategoryChipBar extends StatefulWidget {
   final String selectedCategory;
@@ -132,7 +133,7 @@ class _CategoryChipBarState extends State<CategoryChipBar> {
                         : color,
                   ),
                   label: Text(
-                    label,
+                    LocalizationsHelper.translate(context, label),
                     style: TextStyle(
                       color: isSelected
                           ? Colors.white

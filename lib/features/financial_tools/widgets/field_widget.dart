@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/field_config.dart';
+import 'package:dukan_tools/common/localizations_helper.dart';
 
 class FieldWidget extends StatelessWidget {
   final FieldConfig config;
@@ -64,8 +65,8 @@ class FieldWidget extends StatelessWidget {
               keyboardType: TextInputType.text,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               decoration: InputDecoration(
-                labelText: config.label,
-                hintText: config.hint,
+                labelText: LocalizationsHelper.translate(context, config.label),
+                hintText: config.hint != null ? LocalizationsHelper.translate(context, config.hint!) : null,
                 border: const OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                 ),
@@ -97,8 +98,8 @@ class FieldWidget extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   textAlign: TextAlign.center,
                   decoration: InputDecoration(
-                    labelText: config.label,
-                    hintText: config.hint ?? '0',
+                    labelText: LocalizationsHelper.translate(context, config.label),
+                    hintText: config.hint != null ? LocalizationsHelper.translate(context, config.hint!) : '0',
                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     border: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -132,8 +133,8 @@ class FieldWidget extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             decoration: InputDecoration(
-              labelText: config.label,
-              hintText: config.hint,
+              labelText: LocalizationsHelper.translate(context, config.label),
+              hintText: config.hint != null ? LocalizationsHelper.translate(context, config.hint!) : null,
               border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
@@ -152,7 +153,7 @@ class FieldWidget extends StatelessWidget {
           child: DropdownButtonFormField<String>(
             value: currentValue as String?,
             decoration: InputDecoration(
-              labelText: config.label,
+              labelText: LocalizationsHelper.translate(context, config.label),
               border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
@@ -160,7 +161,7 @@ class FieldWidget extends StatelessWidget {
             items: options.map((opt) {
               return DropdownMenuItem<String>(
                 value: opt,
-                child: Text(opt, style: const TextStyle(fontSize: 14)),
+                child: Text(LocalizationsHelper.translate(context, opt), style: const TextStyle(fontSize: 14)),
               );
             }).toList(),
             onChanged: onChanged,
@@ -193,7 +194,7 @@ class FieldWidget extends StatelessWidget {
               color: Colors.transparent,
               child: SwitchListTile(
                 title: Text(
-                  config.label,
+                  LocalizationsHelper.translate(context, config.label),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -215,7 +216,7 @@ class FieldWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                config.label,
+                LocalizationsHelper.translate(context, config.label),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -229,7 +230,7 @@ class FieldWidget extends StatelessWidget {
                   segments: options.map((opt) {
                     return ButtonSegment<String>(
                       value: opt,
-                      label: Text(opt, style: const TextStyle(fontSize: 12)),
+                      label: Text(LocalizationsHelper.translate(context, opt), style: const TextStyle(fontSize: 12)),
                     );
                   }).toList(),
                   selected: {activeVal},
@@ -247,7 +248,7 @@ class FieldWidget extends StatelessWidget {
 
       case FieldType.date:
         final date = currentValue as DateTime?;
-        final dateStr = date != null ? '${date.day}/${date.month}/${date.year}' : 'Select Date';
+        final dateStr = date != null ? '${date.day}/${date.month}/${date.year}' : LocalizationsHelper.translate(context, 'Select Date');
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 12.0),
@@ -257,7 +258,7 @@ class FieldWidget extends StatelessWidget {
             readOnly: true,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             decoration: InputDecoration(
-              labelText: config.label,
+              labelText: LocalizationsHelper.translate(context, config.label),
               border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
@@ -304,7 +305,7 @@ class FieldWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    config.label,
+                    LocalizationsHelper.translate(context, config.label),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,

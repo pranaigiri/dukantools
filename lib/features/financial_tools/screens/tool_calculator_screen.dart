@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dukan_tools/l10n/app_localizations.dart';
 import '../models/tool_config.dart';
 import '../models/field_config.dart';
 import '../models/calculate_result.dart';
@@ -148,10 +149,12 @@ class _ToolCalculatorScreenState extends State<ToolCalculatorScreen> {
     final batch = _inputs[batchFieldId] as String? ?? '';
     final expiryDate = _inputs[dateFieldId] as DateTime?;
 
+    final l10n = AppLocalizations.of(context)!;
+
     if (name.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid product/medicine name'),
+        SnackBar(
+          content: Text(l10n.pleaseEnterAValidName),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -161,8 +164,8 @@ class _ToolCalculatorScreenState extends State<ToolCalculatorScreen> {
 
     if (expiryDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select an expiry date'),
+        SnackBar(
+          content: Text(l10n.pleaseSelectAnExpiryDate),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -197,8 +200,8 @@ class _ToolCalculatorScreenState extends State<ToolCalculatorScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Expiry entry saved successfully!'),
+        SnackBar(
+          content: Text(l10n.expiryEntrySavedSuccessfully),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -214,9 +217,10 @@ class _ToolCalculatorScreenState extends State<ToolCalculatorScreen> {
     await prefs.setString('expiry_tracker_entries', json.encode(_savedExpiries));
 
     if (mounted) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Entry removed'),
+        SnackBar(
+          content: Text(l10n.entryRemoved),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -232,6 +236,7 @@ class _ToolCalculatorScreenState extends State<ToolCalculatorScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     if (_isLoading) {
       return const Padding(
@@ -273,7 +278,7 @@ class _ToolCalculatorScreenState extends State<ToolCalculatorScreen> {
             ElevatedButton.icon(
               onPressed: _saveExpiryEntry,
               icon: const Icon(Icons.bookmark_add),
-              label: const Text('Save to Expiry Log'),
+              label: Text(l10n.saveToExpiryLog),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
@@ -283,7 +288,7 @@ class _ToolCalculatorScreenState extends State<ToolCalculatorScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Saved Expiry Log',
+              l10n.savedExpiryLog,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -301,12 +306,12 @@ class _ToolCalculatorScreenState extends State<ToolCalculatorScreen> {
                     color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
                   ),
                 ),
-                child: const Padding(
-                  padding: EdgeInsets.all(16.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Center(
                     child: Text(
-                      'No entries recorded yet.',
-                      style: TextStyle(color: Colors.grey),
+                      l10n.noEntriesRecordedYet,
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ),
                 ),
@@ -347,9 +352,9 @@ class _ToolCalculatorScreenState extends State<ToolCalculatorScreen> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (batch.isNotEmpty) Text('Batch: $batch', style: const TextStyle(fontSize: 12)),
+                          if (batch.isNotEmpty) Text('${l10n.batchLabel}: $batch', style: const TextStyle(fontSize: 12)),
                           Text(
-                            'Expiry: ${expDate.day}/${expDate.month}/${expDate.year}',
+                            '${l10n.expiryLabel}: ${expDate.day}/${expDate.month}/${expDate.year}',
                             style: const TextStyle(fontSize: 12),
                           ),
                         ],
@@ -365,11 +370,11 @@ class _ToolCalculatorScreenState extends State<ToolCalculatorScreen> {
                               border: Border.all(color: badgeColor.withOpacity(0.5)),
                             ),
                             child: Text(
-                              days >= 0 ? '$days d left' : 'EXPIRED',
+                              days >= 0 ? l10n.daysLeftText(days) : l10n.expiredText,
                               style: TextStyle(
                                 color: badgeColor,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 11,
+                                				fontSize: 11,
                               ),
                             ),
                           ),

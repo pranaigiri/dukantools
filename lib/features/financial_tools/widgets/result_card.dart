@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/calculate_result.dart';
+import 'package:dukan_tools/common/localizations_helper.dart';
 
 class ResultCard extends StatelessWidget {
   final CalculateResult result;
@@ -51,7 +52,7 @@ class ResultCard extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    result.primaryLabel,
+                    LocalizationsHelper.translate(context, result.primaryLabel),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -60,7 +61,7 @@ class ResultCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    result.primaryResult,
+                    LocalizationsHelper.translate(context, result.primaryResult),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24,
@@ -82,7 +83,7 @@ class ResultCard extends StatelessWidget {
                         Expanded(
                           flex: 5,
                           child: Text(
-                            sec.label,
+                            LocalizationsHelper.translate(context, sec.label),
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
@@ -93,7 +94,7 @@ class ResultCard extends StatelessWidget {
                         Expanded(
                           flex: 5,
                           child: Text(
-                            sec.value,
+                            LocalizationsHelper.translate(context, sec.value),
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               fontSize: 13,
@@ -125,7 +126,7 @@ class ResultCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        formulaText,
+                        LocalizationsHelper.translate(context, formulaText),
                         style: TextStyle(
                           fontSize: 10.5,
                           fontStyle: FontStyle.italic,

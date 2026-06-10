@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dukan_tools/common/version_code.dart';
+import 'package:dukan_tools/l10n/app_localizations.dart';
 
 class AboutUs extends StatelessWidget {
   AboutUs({super.key});
@@ -8,9 +9,11 @@ class AboutUs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About'),
+        title: Text(l10n.about),
       ),
       body: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -23,15 +26,15 @@ class AboutUs extends StatelessWidget {
               width: 80,
               height: 80,
             ),
-            const Text(
-              "Dukan Tools",
+            Text(
+              l10n.dukanTools,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24),
+              style: const TextStyle(fontSize: 24),
             ),
-            const Text(
-              "All in One - Goods & Finance Calculator",
+            Text(
+              l10n.allInOneGoodsFinanceCalculator,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 14),
             ),
             FutureBuilder<String>(
               future: _versionCode.getVersionCode(),
@@ -39,9 +42,9 @@ class AboutUs extends StatelessWidget {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
                 } else if (snapshot.hasError) {
-                  return const Text('Error loading version');
+                  return Text(l10n.errorLoadingVersion);
                 } else {
-                  return Text('Version: ${snapshot.data}',
+                  return Text('${l10n.version}: ${snapshot.data}',
                       style: const TextStyle(
                           fontWeight: FontWeight.w100, color: Colors.grey));
                 }
@@ -54,18 +57,18 @@ class AboutUs extends StatelessWidget {
               color: Colors.black12,
               thickness: 0.5,
             ),
-            const Text(
-              'This tool is developed for the shopowners to help them on their daily calculation tasks.',
+            Text(
+              l10n.thisToolIsDevelopedForTheShopownersToHelpThemOnTheirDailyCalculationTasks,
               textAlign: TextAlign.center,
             ),
             const SizedBox(
               height: 20,
             ),
-            const Text(
-              "Developed By:",
-              style: TextStyle(fontWeight: FontWeight.w100, color: Colors.grey),
+            Text(
+              l10n.developedBy,
+              style: const TextStyle(fontWeight: FontWeight.w100, color: Colors.grey),
             ),
-            const Text("Pranai Giri (The Designer Sikkim)")
+            Text(l10n.pranaiGiriTheDesignerSikkim)
           ],
         )),
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dukan_tools/screens/main_navigation_shell.dart';
 import 'package:dukan_tools/models/item.dart';
 import 'package:dukan_tools/widgets/banner_ad_widget.dart';
+import 'package:dukan_tools/common/localizations_helper.dart';
 
 class ItemDetails extends StatefulWidget {
   const ItemDetails({super.key});
@@ -22,7 +23,7 @@ class _ItemDetailsState extends State<ItemDetails> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(item.name),
+            title: Text(LocalizationsHelper.translate(context, item.name)),
             backgroundColor: item.color,
             iconTheme: const IconThemeData(color: Colors.white),
             toolbarTextStyle: const TextTheme(

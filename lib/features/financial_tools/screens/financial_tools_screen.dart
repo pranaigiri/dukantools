@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dukan_tools/models/item.dart';
 import 'package:dukan_tools/services/ad_manager.dart';
+import 'package:dukan_tools/l10n/app_localizations.dart';
+import 'package:dukan_tools/common/localizations_helper.dart';
 
 import '../models/tool_config.dart';
 import '../models/legacy_card_config.dart';
@@ -43,6 +45,8 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
   int _redExpiryCount = 0;
   int _yellowExpiryCount = 0;
   bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   /// Owned here so it survives tab switches (CategoryChipBar may be disposed
   /// and recreated when switching tabs, but this controller is not).
@@ -57,6 +61,7 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
   @override
   void dispose() {
     _chipScrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -172,6 +177,16 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
     }
   }
 
+  List<FinancialToolItem> _getAllTools() {
+    final List<FinancialToolItem> list = [];
+    for (var cat in CategoryChipBar.categories) {
+      final String catId = cat['id'] as String;
+      if (catId == 'all') continue;
+      list.addAll(_getItemsForCategory(catId));
+    }
+    return list;
+  }
+
   void _openTool(FinancialToolItem item) async {
     Item routeItem;
 
@@ -221,9 +236,25 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
       );
     }
 
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final showWarningBanner = (_redExpiryCount > 0 || _yellowExpiryCount > 0) &&
-        (_selectedCategory == 'all' || _selectedCategory == 'medical');
+        (_selectedCategory == 'all' || _selectedCategory == 'medical') &&
+        _searchQuery.isEmpty;
+
+    final filteredTools = _searchQuery.isEmpty
+        ? []
+        : _getAllTools().where((item) {
+            final query = _searchQuery.toLowerCase().trim();
+            final nameEn = item.name.toLowerCase();
+            final descEn = item.description.toLowerCase();
+            final nameHi = LocalizationsHelper.translate(context, item.name).toLowerCase();
+            final descHi = LocalizationsHelper.translate(context, item.description).toLowerCase();
+            return nameEn.contains(query) ||
+                descEn.contains(query) ||
+                nameHi.contains(query) ||
+                descHi.contains(query);
+          }).toList();
 
     return Column(
       children: [
@@ -231,6 +262,56 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
           selectedCategory: _selectedCategory,
           onCategorySelected: _selectCategory,
           scrollController: _chipScrollController,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+                width: 1.0,
+              ),
+            ),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val;
+                });
+              },
+              style: TextStyle(
+                fontSize: 14.5,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                hintText: LocalizationsHelper.translate(context, 'Search for a tool...'),
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
+                ),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+              ),
+            ),
+          ),
         ),
         if (showWarningBanner)
           Padding(
@@ -265,7 +346,7 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Critical Expiry Warning',
+                              l10n.criticalExpiryWarning,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: _redExpiryCount > 0 ? Colors.red : Colors.orange.shade800,
@@ -274,7 +355,7 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${_redExpiryCount > 0 ? "$_redExpiryCount item(s) expiring in <60 days. " : ""}${_yellowExpiryCount > 0 ? "$_yellowExpiryCount item(s) expiring in <90 days." : ""}',
+                              '${_redExpiryCount > 0 ? l10n.redExpiryWarningCount(_redExpiryCount) : ""}${_yellowExpiryCount > 0 ? l10n.yellowExpiryWarningCount(_yellowExpiryCount) : ""}',
                               style: TextStyle(
                                 fontSize: 11.5,
                                 color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
@@ -294,8 +375,66 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
             ),
           ),
 
-        // If 'All' is selected, group tools by category with header labels
-        if (_selectedCategory == 'all')
+        // If searching, display the filtered search results grid
+        if (_searchQuery.isNotEmpty)
+          Expanded(
+            child: filteredTools.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 64,
+                            color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.noResultsMatchYourSearch,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.tryADifferentSearchQuery,
+                            style: TextStyle(
+                              color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredTools.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 1.05,
+                    ),
+                    itemBuilder: (context, index) {
+                      final item = filteredTools[index];
+                      return ToolGridCard(
+                        name: LocalizationsHelper.translate(context, item.name),
+                        description: LocalizationsHelper.translate(context, item.description),
+                        icon: item.icon,
+                        category: item.category,
+                        onTap: () => _openTool(item),
+                      );
+                    },
+                  ),
+          )
+        else if (_selectedCategory == 'all')
+          // If 'All' is selected, group tools by category with header labels
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -326,7 +465,7 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                cat['label'] as String,
+                                LocalizationsHelper.translate(context, cat['label'] as String),
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
@@ -350,8 +489,8 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
                           itemBuilder: (context, index) {
                             final item = tools[index];
                             return ToolGridCard(
-                              name: item.name,
-                              description: item.description,
+                              name: LocalizationsHelper.translate(context, item.name),
+                              description: LocalizationsHelper.translate(context, item.description),
                               icon: item.icon,
                               category: item.category,
                               onTap: () => _openTool(item),
@@ -385,8 +524,8 @@ class _FinancialToolsScreenState extends State<FinancialToolsScreen> {
                   itemBuilder: (context, index) {
                     final item = tools[index];
                     return ToolGridCard(
-                      name: item.name,
-                      description: item.description,
+                      name: LocalizationsHelper.translate(context, item.name),
+                      description: LocalizationsHelper.translate(context, item.description),
                       icon: item.icon,
                       category: item.category,
                       onTap: () => _openTool(item),

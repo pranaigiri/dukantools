@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:dukan_tools/providers/data_provider.dart';
 import 'package:dukan_tools/models/pl_entry.dart';
 import 'package:intl/intl.dart';
+import 'package:dukan_tools/l10n/app_localizations.dart';
+import 'package:dukan_tools/common/localizations_helper.dart';
 
 class DayBookTab extends StatefulWidget {
   const DayBookTab({super.key});
@@ -40,6 +42,7 @@ class _DayBookTabState extends State<DayBookTab> {
   Widget build(BuildContext context) {
     final dataProvider = Provider.of<DataProvider>(context);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     if (dataProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -58,16 +61,16 @@ class _DayBookTabState extends State<DayBookTab> {
                   style: SegmentedButton.styleFrom(
                     visualDensity: VisualDensity.compact,
                   ),
-                  segments: const <ButtonSegment<String>>[
+                  segments: <ButtonSegment<String>>[
                     ButtonSegment<String>(
                       value: 'daily',
-                      label: Text('Daily Book'),
-                      icon: Icon(Icons.calendar_today_outlined),
+                      label: Text(l10n.dailyBook),
+                      icon: const Icon(Icons.calendar_today_outlined),
                     ),
                     ButtonSegment<String>(
                       value: 'monthly',
-                      label: Text('Monthly Overview'),
-                      icon: Icon(Icons.calendar_month_outlined),
+                      label: Text(l10n.monthlyOverview),
+                      icon: const Icon(Icons.calendar_month_outlined),
                     ),
                   ],
                   selected: <String>{_viewMode},
@@ -92,7 +95,7 @@ class _DayBookTabState extends State<DayBookTab> {
               heroTag: 'daybook_add_transaction_fab',
               onPressed: () => _showAddEntrySheet(context, dataProvider),
               icon: const Icon(Icons.add),
-              label: const Text("Add Transaction"),
+              label: Text(l10n.addTransaction),
             )
           : null,
     );
@@ -155,23 +158,26 @@ class _DayBookTabState extends State<DayBookTab> {
   }
 
   Widget _buildMonthlyOverview(ThemeData theme, DataProvider dataProvider) {
+    final l10n = AppLocalizations.of(context)!;
+    final localeStr = Localizations.localeOf(context).toString();
+
     // Group all P&L entries by month and year
     final Map<String, List<PLEntry>> monthlyGroups = {};
     for (var entry in dataProvider.plEntries) {
-      final key = DateFormat('MMMM yyyy').format(entry.date);
+      final key = DateFormat('MMMM yyyy', localeStr).format(entry.date);
       monthlyGroups.putIfAbsent(key, () => []).add(entry);
     }
 
     if (monthlyGroups.isEmpty) {
-      final key = DateFormat('MMMM yyyy').format(DateTime.now());
+      final key = DateFormat('MMMM yyyy', localeStr).format(DateTime.now());
       monthlyGroups[key] = [];
     }
 
     final sortedKeys = monthlyGroups.keys.toList()
       ..sort((a, b) {
         try {
-          final dateA = DateFormat('MMMM yyyy').parse(a);
-          final dateB = DateFormat('MMMM yyyy').parse(b);
+          final dateA = DateFormat('MMMM yyyy', localeStr).parse(a);
+          final dateB = DateFormat('MMMM yyyy', localeStr).parse(b);
           return dateB.compareTo(dateA); // Newest month first
         } catch (_) {
           return 0;
@@ -195,6 +201,7 @@ class _DayBookTabState extends State<DayBookTab> {
             monthlyExpense += e.amount;
           }
         }
+
         double monthlyNet = monthlyIncome - monthlyExpense;
         final netColor = monthlyNet >= 0 ? Colors.teal : Colors.deepOrangeAccent;
 
@@ -210,7 +217,7 @@ class _DayBookTabState extends State<DayBookTab> {
             onTap: () {
               // Extract date from month key to set _selectedDate and switch view
               try {
-                final date = DateFormat('MMMM yyyy').parse(key);
+                final date = DateFormat('MMMM yyyy', localeStr).parse(key);
                 setState(() {
                   // Set to first day of that month, or current day if it's the current month/year
                   final now = DateTime.now();
@@ -240,7 +247,7 @@ class _DayBookTabState extends State<DayBookTab> {
                       ),
                       const Spacer(),
                       Text(
-                        "${entries.length} txs",
+                        "${entries.length} ${l10n.txs}",
                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       const SizedBox(width: 4),
@@ -254,7 +261,7 @@ class _DayBookTabState extends State<DayBookTab> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("Total Income", style: TextStyle(fontSize: 11, color: Colors.grey)),
+                            Text(l10n.totalIncome, style: const TextStyle(fontSize: 11, color: Colors.grey)),
                             const SizedBox(height: 4),
                             Text(
                               "₹${monthlyIncome.toStringAsFixed(2)}",
@@ -271,7 +278,7 @@ class _DayBookTabState extends State<DayBookTab> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("Total Expense", style: TextStyle(fontSize: 11, color: Colors.grey)),
+                            Text(l10n.totalExpense, style: const TextStyle(fontSize: 11, color: Colors.grey)),
                             const SizedBox(height: 4),
                             Text(
                               "₹${monthlyExpense.toStringAsFixed(2)}",
@@ -288,7 +295,7 @@ class _DayBookTabState extends State<DayBookTab> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("Net Balance", style: TextStyle(fontSize: 11, color: Colors.grey)),
+                            Text(l10n.netBalance, style: const TextStyle(fontSize: 11, color: Colors.grey)),
                             const SizedBox(height: 4),
                             Text(
                               "${monthlyNet >= 0 ? '+' : ''}₹${monthlyNet.toStringAsFixed(2)}",
@@ -313,7 +320,8 @@ class _DayBookTabState extends State<DayBookTab> {
   }
 
   Widget _buildDayHeaderCard(ThemeData theme, double income, double expense, double net) {
-    final dateStr = DateFormat('EEEE, dd MMMM yyyy').format(_selectedDate);
+    final l10n = AppLocalizations.of(context)!;
+    final dateStr = DateFormat('EEEE, dd MMMM yyyy', Localizations.localeOf(context).toString()).format(_selectedDate);
 
     return Container(
       width: double.infinity,
@@ -370,12 +378,12 @@ class _DayBookTabState extends State<DayBookTab> {
           const SizedBox(height: 16),
           Row(
             children: [
-              _buildDailyStatColumn("Income", "₹${income.toStringAsFixed(2)}", Colors.green, theme),
+              _buildDailyStatColumn(l10n.income, "₹${income.toStringAsFixed(2)}", Colors.green, theme),
               Container(width: 1, height: 40, color: theme.dividerColor.withOpacity(0.2)),
-              _buildDailyStatColumn("Expense", "₹${expense.toStringAsFixed(2)}", Colors.red, theme),
+              _buildDailyStatColumn(l10n.expense, "₹${expense.toStringAsFixed(2)}", Colors.red, theme),
               Container(width: 1, height: 40, color: theme.dividerColor.withOpacity(0.2)),
               _buildDailyStatColumn(
-                "Net Profit",
+                l10n.netProfit,
                 "${net >= 0 ? '+' : ''}₹${net.toStringAsFixed(2)}",
                 net >= 0 ? Colors.teal : Colors.deepOrangeAccent,
                 theme,
@@ -409,20 +417,21 @@ class _DayBookTabState extends State<DayBookTab> {
   }
 
   Widget _buildFiltersRow(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Row(
         children: [
           Text(
-            "Transactions",
+            l10n.transactions,
             style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const Spacer(),
-          _buildFilterChip('All', 'all'),
+          _buildFilterChip(l10n.all, 'all'),
           const SizedBox(width: 8),
-          _buildFilterChip('Income', 'income'),
+          _buildFilterChip(l10n.income, 'income'),
           const SizedBox(width: 8),
-          _buildFilterChip('Expense', 'expense'),
+          _buildFilterChip(l10n.expense, 'expense'),
         ],
       ),
     );
@@ -462,6 +471,7 @@ class _DayBookTabState extends State<DayBookTab> {
   }
 
   Widget _buildEmptyState(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -469,13 +479,13 @@ class _DayBookTabState extends State<DayBookTab> {
           Icon(Icons.notes_outlined, size: 48, color: Colors.grey.withOpacity(0.5)),
           const SizedBox(height: 12),
           Text(
-            "No entries for this day",
+            l10n.noEntriesForThisDay,
             style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 4),
-          const Text(
-            "Tap 'Add Transaction' to log cash flow.",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+          Text(
+            l10n.tapAddTransactionToLogCashFlow,
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ],
       ),
@@ -483,6 +493,7 @@ class _DayBookTabState extends State<DayBookTab> {
   }
 
   Widget _buildEntryItem(ThemeData theme, PLEntry entry, DataProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
     final color = entry.type == 'income' ? Colors.green : Colors.red;
 
     return Dismissible(
@@ -497,7 +508,7 @@ class _DayBookTabState extends State<DayBookTab> {
       onDismissed: (_) {
         provider.deletePLEntry(entry.id);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Transaction deleted')),
+          SnackBar(content: Text(l10n.transactionDeleted)),
         );
       },
       child: Container(
@@ -528,7 +539,7 @@ class _DayBookTabState extends State<DayBookTab> {
                   Row(
                     children: [
                       Text(
-                        entry.category,
+                        LocalizationsHelper.translate(context, entry.category),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 6),
@@ -539,7 +550,7 @@ class _DayBookTabState extends State<DayBookTab> {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          entry.type.toUpperCase(),
+                          entry.type == 'income' ? l10n.incomeGot.toUpperCase() : l10n.expensePaid.toUpperCase(),
                           style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -547,7 +558,7 @@ class _DayBookTabState extends State<DayBookTab> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    entry.description.isNotEmpty ? entry.description : 'No description',
+                    entry.description.isNotEmpty ? entry.description : l10n.noDescription,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.grey[600],
                       fontSize: 13,
@@ -628,6 +639,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final isIncome = _type == 'income';
     final categories = isIncome ? widget.incomeCategories : widget.expenseCategories;
 
@@ -657,7 +669,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
               ),
               const SizedBox(height: 20),
               Text(
-                "Add Transaction",
+                l10n.addTransaction,
                 style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
@@ -668,16 +680,16 @@ class _AddEntryFormState extends State<_AddEntryForm> {
                     selectedBackgroundColor: isIncome ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
                     selectedForegroundColor: isIncome ? Colors.green : Colors.red,
                   ),
-                  segments: const <ButtonSegment<String>>[
+                  segments: <ButtonSegment<String>>[
                     ButtonSegment<String>(
                       value: 'income',
-                      label: Text('Income (Got)'),
-                      icon: Icon(Icons.arrow_downward, color: Colors.green),
+                      label: Text(l10n.incomeGot),
+                      icon: const Icon(Icons.arrow_downward, color: Colors.green),
                     ),
                     ButtonSegment<String>(
                       value: 'expense',
-                      label: Text('Expense (Paid)'),
-                      icon: Icon(Icons.arrow_upward, color: Colors.red),
+                      label: Text(l10n.expensePaid),
+                      icon: const Icon(Icons.arrow_upward, color: Colors.red),
                     ),
                   ],
                   selected: <String>{_type},
@@ -698,7 +710,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
                 controller: _amountController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'Amount (₹)',
+                  labelText: l10n.amount,
                   prefixIcon: const Icon(Icons.currency_rupee),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -706,10 +718,10 @@ class _AddEntryFormState extends State<_AddEntryForm> {
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
-                    return 'Please enter an amount';
+                    return l10n.pleaseEnterAnAmount;
                   }
                   if (double.tryParse(val) == null || double.parse(val) <= 0) {
-                    return 'Please enter a valid positive amount';
+                    return l10n.pleaseEnterAValidPositiveAmount;
                   }
                   return null;
                 },
@@ -719,7 +731,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
               DropdownButtonFormField<String>(
                 value: _category,
                 decoration: InputDecoration(
-                  labelText: 'Category',
+                  labelText: l10n.category,
                   prefixIcon: const Icon(Icons.category),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -728,7 +740,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
                 items: categories.map((cat) {
                   return DropdownMenuItem<String>(
                     value: cat,
-                    child: Text(cat),
+                    child: Text(LocalizationsHelper.translate(context, cat)),
                   );
                 }).toList(),
                 onChanged: (val) {
@@ -744,7 +756,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
               TextFormField(
                 controller: _descController,
                 decoration: InputDecoration(
-                  labelText: 'Description',
+                  labelText: l10n.description,
                   prefixIcon: const Icon(Icons.description),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -778,7 +790,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
                       const Icon(Icons.calendar_today, color: Colors.grey),
                       const SizedBox(width: 12),
                       Text(
-                        "Date: ${DateFormat('dd MMMM yyyy').format(_date)}",
+                        "${l10n.date}: ${DateFormat('dd MMMM yyyy', Localizations.localeOf(context).toString()).format(_date)}",
                         style: const TextStyle(fontSize: 16),
                       ),
                       const Spacer(),
@@ -798,7 +810,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () => Navigator.pop(context),
-                      child: const Text("Cancel"),
+                      child: Text(l10n.cancel),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -823,7 +835,7 @@ class _AddEntryFormState extends State<_AddEntryForm> {
                           widget.onSave(entry);
                         }
                       },
-                      child: const Text("Save"),
+                      child: Text(l10n.save),
                     ),
                   ),
                 ],

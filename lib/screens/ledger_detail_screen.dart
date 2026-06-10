@@ -6,6 +6,7 @@ import 'package:dukan_tools/models/ledger_account.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:dukan_tools/l10n/app_localizations.dart';
 
 class LedgerDetailScreen extends StatelessWidget {
   final String accountId;
@@ -16,12 +17,13 @@ class LedgerDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final dataProvider = Provider.of<DataProvider>(context);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     final account = dataProvider.getAccountById(accountId);
     if (account == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text("Account Details")),
-        body: const Center(child: Text("Account not found")),
+        appBar: AppBar(title: Text(l10n.accountDetails)),
+        body: Center(child: Text(l10n.accountNotFound)),
       );
     }
     final balance = account.balance;
@@ -35,18 +37,18 @@ class LedgerDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () => _shareReminder(context, account),
-            tooltip: "Share Reminder",
+            tooltip: l10n.shareReminder,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _confirmDeleteAccount(context, dataProvider, account),
-            tooltip: "Delete Account",
+            tooltip: l10n.deleteAccount,
           ),
         ],
       ),
       body: Column(
         children: [
-          _buildBalanceCard(theme, balance),
+          _buildBalanceCard(theme, balance, context),
           _buildContactActionBar(context, theme, dataProvider, account),
           const SizedBox(height: 8),
 
@@ -55,12 +57,12 @@ class LedgerDetailScreen extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  "Transaction History",
+                  l10n.transactionHistory,
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 Text(
-                  "${transactions.length} entries",
+                  "${transactions.length} ${l10n.entries}",
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
@@ -69,7 +71,7 @@ class LedgerDetailScreen extends StatelessWidget {
 
           Expanded(
             child: transactions.isEmpty
-                ? _buildEmptyState(theme)
+                ? _buildEmptyState(theme, context)
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     itemCount: transactions.length,
@@ -86,19 +88,20 @@ class LedgerDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceCard(ThemeData theme, double balance) {
+  Widget _buildBalanceCard(ThemeData theme, double balance, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Color cardColor = Colors.grey;
-    String statusText = "Settled";
-    String title = "Account Balance";
+    String statusText = l10n.settled;
+    String title = l10n.accountBalance;
 
     if (balance > 0) {
       cardColor = Colors.green;
-      statusText = "You Will Get ₹${balance.toStringAsFixed(2)}";
-      title = "Outstanding Receivable";
+      statusText = "${l10n.youWillGet} ₹${balance.toStringAsFixed(2)}";
+      title = l10n.outstandingReceivable;
     } else if (balance < 0) {
       cardColor = Colors.red;
-      statusText = "You Will Give ₹${balance.abs().toStringAsFixed(2)}";
-      title = "Outstanding Payable";
+      statusText = "${l10n.youWillGive} ₹${balance.abs().toStringAsFixed(2)}";
+      title = l10n.outstandingPayable;
     }
 
     return Container(
@@ -134,13 +137,14 @@ class LedgerDetailScreen extends StatelessWidget {
   Widget _buildContactActionBar(BuildContext context, ThemeData theme, DataProvider provider, LedgerAccount account) {
     final balance = account.balance;
     final shopName = provider.getShopNameForAccount(account);
+    final l10n = AppLocalizations.of(context)!;
     String message = '';
     if (balance > 0) {
-      message = "Dear ${account.name},\n\nYour outstanding balance on $shopName is ₹${balance.toStringAsFixed(2)}. Please settle this receivable soon.\n\nThank you!";
+      message = l10n.reminderReceivableTemplate(balance.toStringAsFixed(2), account.name, shopName);
     } else if (balance < 0) {
-      message = "Dear ${account.name},\n\nWe have a pending payable amount of ₹${balance.abs().toStringAsFixed(2)} to you. We will settle it soon.\n\nThank you!";
+      message = l10n.reminderPayableTemplate(balance.abs().toStringAsFixed(2), account.name);
     } else {
-      message = "Dear ${account.name},\n\nYour account is settled with $shopName.\n\nThank you!";
+      message = l10n.reminderSettledTemplate(account.name, shopName);
     }
 
     if (account.phone.isEmpty) {
@@ -156,18 +160,18 @@ class LedgerDetailScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.phone_disabled, size: 16, color: Colors.grey),
-                SizedBox(width: 8),
-                Text("No phone number registered", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Icon(Icons.phone_disabled, size: 16, color: Colors.grey),
+                const SizedBox(width: 8),
+                Text(l10n.noPhoneNumberRegistered, style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
             TextButton.icon(
               style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
               onPressed: () => _showEditContactDialog(context, provider, account),
               icon: const Icon(Icons.add, size: 14),
-              label: const Text("Add", style: TextStyle(fontSize: 12)),
+              label: Text(l10n.add, style: const TextStyle(fontSize: 12)),
             )
           ],
         ),
@@ -191,7 +195,7 @@ class LedgerDetailScreen extends StatelessWidget {
               Icon(Icons.contact_phone_outlined, size: 14, color: theme.colorScheme.primary),
               const SizedBox(width: 6),
               Text(
-                "Contact: ${account.phone}",
+                "${l10n.contact}: ${account.phone}",
                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.grey),
               ),
               const Spacer(),
@@ -202,7 +206,7 @@ class LedgerDetailScreen extends StatelessWidget {
                     Icon(Icons.edit, size: 12, color: theme.colorScheme.primary),
                     const SizedBox(width: 4),
                     Text(
-                      "Edit",
+                      l10n.edit,
                       style: TextStyle(fontSize: 11, color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -215,21 +219,21 @@ class LedgerDetailScreen extends StatelessWidget {
             children: [
               _buildContactButton(
                 icon: FontAwesomeIcons.phone,
-                label: "Call Dial",
+                label: l10n.callDial,
                 color: Colors.blue,
                 onTap: () => _makeCall(context, account.phone),
               ),
               const SizedBox(width: 10),
               _buildContactButton(
                 icon: FontAwesomeIcons.commentSms,
-                label: "SMS Share",
+                label: l10n.smsShare,
                 color: Colors.orange,
                 onTap: () => _sendSMS(context, account.phone, message),
               ),
               const SizedBox(width: 10),
               _buildContactButton(
                 icon: FontAwesomeIcons.whatsapp,
-                label: "WhatsApp",
+                label: l10n.whatsapp,
                 color: Colors.green,
                 onTap: () => _sendWhatsApp(context, account.phone, message),
               ),
@@ -281,9 +285,10 @@ class LedgerDetailScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text("Edit Customer Profile", style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(l10n.editCustomerProfile, style: const TextStyle(fontWeight: FontWeight.bold)),
           content: Form(
             key: formKey,
             child: Column(
@@ -291,13 +296,13 @@ class LedgerDetailScreen extends StatelessWidget {
               children: [
                 TextFormField(
                   controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: "Name *",
-                    prefixIcon: Icon(Icons.person),
+                  decoration: InputDecoration(
+                    labelText: l10n.name,
+                    prefixIcon: const Icon(Icons.person),
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return "Please enter a name";
+                      return l10n.pleaseEnterAName;
                     }
                     return null;
                   },
@@ -306,9 +311,9 @@ class LedgerDetailScreen extends StatelessWidget {
                 TextFormField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: "Phone Number",
-                    prefixIcon: Icon(Icons.phone),
+                  decoration: InputDecoration(
+                    labelText: l10n.phoneNumber,
+                    prefixIcon: const Icon(Icons.phone),
                   ),
                 ),
               ],
@@ -317,7 +322,7 @@ class LedgerDetailScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               onPressed: () {
@@ -330,7 +335,7 @@ class LedgerDetailScreen extends StatelessWidget {
                   Navigator.pop(context);
                 }
               },
-              child: const Text("Save"),
+              child: Text(l10n.save),
             ),
           ],
         );
@@ -341,13 +346,14 @@ class LedgerDetailScreen extends StatelessWidget {
   Future<void> _makeCall(BuildContext context, String phoneNumber) async {
     final sanitizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
     final url = 'tel:$sanitizedPhone';
+    final l10n = AppLocalizations.of(context)!;
     try {
       final uri = Uri.parse(url);
       await launchUrl(uri);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Phone dialer not available on this device / emulator. ($e)')),
+          SnackBar(content: Text(l10n.phoneDialerNotAvailable(e.toString()))),
         );
       }
     }
@@ -355,6 +361,7 @@ class LedgerDetailScreen extends StatelessWidget {
 
   Future<void> _sendSMS(BuildContext context, String phoneNumber, String message) async {
     final sanitizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+    final l10n = AppLocalizations.of(context)!;
     final Uri smsUri = Uri(
       scheme: 'sms',
       path: sanitizedPhone,
@@ -367,7 +374,7 @@ class LedgerDetailScreen extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not open SMS application. ($e)')),
+          SnackBar(content: Text(l10n.couldNotOpenSMSApp(e.toString()))),
         );
       }
     }
@@ -376,33 +383,35 @@ class LedgerDetailScreen extends StatelessWidget {
   Future<void> _sendWhatsApp(BuildContext context, String phoneNumber, String message) async {
     final formattedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
     final url = "https://wa.me/$formattedPhone?text=${Uri.encodeComponent(message)}";
+    final l10n = AppLocalizations.of(context)!;
     try {
       final uri = Uri.parse(url);
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not launch WhatsApp. ($e)')),
+          SnackBar(content: Text(l10n.couldNotLaunchWhatsApp(e.toString()))),
         );
       }
     }
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
-    return const Center(
+  Widget _buildEmptyState(ThemeData theme, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey),
-          SizedBox(height: 12),
+          const Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey),
+          const SizedBox(height: 12),
           Text(
-            "No transactions logged yet",
-            style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+            l10n.noTransactionsLoggedYet,
+            style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
-            "Use buttons below to log credit (Got) or debit (Gave).",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+            l10n.useButtonsBelowToLogCreditGotOrDebitGave,
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ],
       ),
@@ -416,9 +425,10 @@ class LedgerDetailScreen extends StatelessWidget {
     String accountId,
     BuildContext context,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final isGave = tx.type == 'debit';
     final color = isGave ? Colors.red : Colors.green;
-    final dateStr = DateFormat('dd MMM yyyy, hh:mm a').format(tx.date);
+    final dateStr = DateFormat('dd MMM yyyy, hh:mm a', Localizations.localeOf(context).toString()).format(tx.date);
 
     return Dismissible(
       key: Key(tx.id),
@@ -432,7 +442,7 @@ class LedgerDetailScreen extends StatelessWidget {
       onDismissed: (_) {
         provider.deleteLedgerTransaction(accountId, tx.id);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Transaction deleted')),
+          SnackBar(content: Text(l10n.transactionDeleted)),
         );
       },
       child: Card(
@@ -460,7 +470,7 @@ class LedgerDetailScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      tx.description.isNotEmpty ? tx.description : (isGave ? "Gave credit" : "Got payment"),
+                      tx.description.isNotEmpty ? tx.description : (isGave ? l10n.gaveCredit : l10n.gotPayment),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 4),
@@ -484,7 +494,7 @@ class LedgerDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    isGave ? "Gave" : "Got",
+                    isGave ? l10n.gave : l10n.got,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -501,6 +511,7 @@ class LedgerDetailScreen extends StatelessWidget {
   }
 
   Widget _buildGivingGettingButtons(BuildContext context, DataProvider provider, String accountId) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -525,12 +536,12 @@ class LedgerDetailScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => _showLogTxSheet(context, provider, accountId, 'debit'),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.remove, size: 16),
-                    SizedBox(width: 6),
-                    Text("YOU GAVE", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Icon(Icons.remove, size: 16),
+                    const SizedBox(width: 6),
+                    Text(l10n.youGave, style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -545,12 +556,12 @@ class LedgerDetailScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => _showLogTxSheet(context, provider, accountId, 'credit'),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.add, size: 16),
-                    SizedBox(width: 6),
-                    Text("YOU GOT", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Icon(Icons.add, size: 16),
+                    const SizedBox(width: 6),
+                    Text(l10n.youGot, style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -575,6 +586,7 @@ class LedgerDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -600,7 +612,7 @@ class LedgerDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  isGave ? "Record You Gave (Debit)" : "Record You Got (Credit)",
+                  isGave ? l10n.recordYouGave : l10n.recordYouGot,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: isGave ? Colors.red : Colors.green,
@@ -613,16 +625,16 @@ class LedgerDetailScreen extends StatelessWidget {
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   autofocus: true,
                   decoration: InputDecoration(
-                    labelText: 'Amount (₹)',
+                    labelText: l10n.amount,
                     prefixIcon: const Icon(Icons.currency_rupee),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'Please enter an amount';
+                      return l10n.pleaseEnterAnAmount;
                     }
                     if (double.tryParse(val) == null || double.parse(val) <= 0) {
-                      return 'Please enter a valid positive amount';
+                      return l10n.pleaseEnterAValidPositiveAmount;
                     }
                     return null;
                   },
@@ -632,9 +644,9 @@ class LedgerDetailScreen extends StatelessWidget {
                 TextFormField(
                   controller: descController,
                   decoration: InputDecoration(
-                    labelText: 'Description',
+                    labelText: l10n.description,
                     prefixIcon: const Icon(Icons.description),
-                    hintText: isGave ? 'e.g., Materials, Rice packet' : 'e.g., Cash, Online Transfer',
+                    hintText: isGave ? l10n.descHintGave : l10n.descHintGot,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
@@ -649,7 +661,7 @@ class LedgerDetailScreen extends StatelessWidget {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel"),
+                        child: Text(l10n.cancel),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -672,7 +684,7 @@ class LedgerDetailScreen extends StatelessWidget {
                             Navigator.pop(context);
                           }
                         },
-                        child: const Text("Save"),
+                        child: Text(l10n.save),
                       ),
                     ),
                   ],
@@ -690,31 +702,33 @@ class LedgerDetailScreen extends StatelessWidget {
     final provider = Provider.of<DataProvider>(context, listen: false);
     final shopName = provider.getShopNameForAccount(account);
     final balance = account.balance;
+    final l10n = AppLocalizations.of(context)!;
     if (balance == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account is settled. No reminder needed.')),
+        SnackBar(content: Text(l10n.accountIsSettledNoReminderNeeded)),
       );
       return;
     }
 
     String message = '';
     if (balance > 0) {
-      message = "Dear ${account.name},\n\nYour outstanding balance on $shopName is ₹${balance.toStringAsFixed(2)}. Please settle this receivable soon.\n\nThank you!";
+      message = l10n.reminderReceivableTemplate(balance.toStringAsFixed(2), account.name, shopName);
     } else {
-      message = "Dear ${account.name},\n\nWe have a pending payable amount of ₹${balance.abs().toStringAsFixed(2)} to you. We will settle it soon.\n\nThank you!";
+      message = l10n.reminderPayableTemplate(balance.abs().toStringAsFixed(2), account.name);
     }
 
     showDialog(
       context: context,
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text("Share Balance Reminder"),
+          title: Text(l10n.shareBalanceReminder),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Copy and send this message to the customer:", style: TextStyle(fontSize: 12, color: Colors.grey)),
+              Text(l10n.copyAndSendThisMessageToTheCustomer, style: const TextStyle(fontSize: 12, color: Colors.grey)),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -732,13 +746,13 @@ class LedgerDetailScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Close"),
+              child: Text(l10n.close),
             ),
             ElevatedButton(
               onPressed: () {
                 importCopy(message, context);
               },
-              child: const Text("Copy Text"),
+              child: Text(l10n.copyText),
             ),
           ],
         );
@@ -747,10 +761,11 @@ class LedgerDetailScreen extends StatelessWidget {
   }
 
   void importCopy(String text, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Clipboard.setData(ClipboardData(text: text));
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reminder copied to clipboard!')),
+      SnackBar(content: Text(l10n.reminderCopiedToClipboard)),
     );
   }
 
@@ -758,14 +773,15 @@ class LedgerDetailScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text("Delete Account?", style: TextStyle(fontWeight: FontWeight.bold)),
-          content: Text("Are you sure you want to delete ${account.name}? All of their ledger transaction history will be lost permanently."),
+          title: Text(l10n.deleteAccount, style: const TextStyle(fontWeight: FontWeight.bold)),
+          content: Text(l10n.deleteAccountConfirmation(account.name)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
@@ -774,10 +790,10 @@ class LedgerDetailScreen extends StatelessWidget {
                 Navigator.pop(context); // Close dialog
                 Navigator.pop(context); // Go back to Ledger list
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Account deleted successfully')),
+                  SnackBar(content: Text(l10n.accountDeletedSuccessfully)),
                 );
               },
-              child: const Text("Delete"),
+              child: Text(l10n.delete),
             ),
           ],
         );

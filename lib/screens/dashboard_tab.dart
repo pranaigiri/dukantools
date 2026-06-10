@@ -5,6 +5,7 @@ import 'package:dukan_tools/providers/data_provider.dart';
 import 'package:dukan_tools/models/pl_entry.dart';
 import 'package:dukan_tools/models/ledger_account.dart';
 import 'package:dukan_tools/common/helper.dart';
+import 'package:dukan_tools/l10n/app_localizations.dart';
 
 class DashboardTab extends StatelessWidget {
   const DashboardTab({super.key});
@@ -14,6 +15,7 @@ class DashboardTab extends StatelessWidget {
     final dataProvider = Provider.of<DataProvider>(context);
     final theme = Theme.of(context);
     final helper = Helper();
+    final l10n = AppLocalizations.of(context)!;
 
     if (dataProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -45,41 +47,41 @@ class DashboardTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Overall Stats Header
-            _buildWelcomeHeader(theme, dataProvider),
+            _buildWelcomeHeader(context, theme, dataProvider),
             const SizedBox(height: 16),
 
             // Monthly Sales Comparison Card
-            _buildMonthlySalesComparisonCard(theme, dataProvider),
+            _buildMonthlySalesComparisonCard(context, theme, dataProvider),
             const SizedBox(height: 20),
 
             // Cash Flow Summary Section
-            _buildSectionHeader(theme, "Daily P&L Analytics"),
+            _buildSectionHeader(theme, l10n.dailyPLAnalytics),
             const SizedBox(height: 10),
             if (hasPlData)
-              _buildPLChartCard(theme, dataProvider.plEntries, helper)
+              _buildPLChartCard(context, theme, dataProvider.plEntries, helper)
             else
               _buildEmptyStateCard(
                 theme,
                 Icons.analytics_outlined,
-                "No P&L data yet",
-                "Log your daily income and expenses in the Day Book tab to view charts.",
+                l10n.noPLDataYet,
+                l10n.logYourDailyIncomeAndExpensesInTheDayBookTabToViewCharts,
               ),
 
             const SizedBox(height: 24),
 
             // Khata/Ledger Summary Section
-            _buildSectionHeader(theme, "Ledger Insights"),
+            _buildSectionHeader(theme, l10n.ledgerInsights),
             const SizedBox(height: 10),
             if (hasLedgerData) ...[
-              _buildLedgerOverviewCard(theme, dataProvider, helper),
+              _buildLedgerOverviewCard(context, theme, dataProvider, helper),
               const SizedBox(height: 16),
-              _buildTopAccountsCard(theme, dataProvider.topActiveAccounts, helper),
+              _buildTopAccountsCard(context, theme, dataProvider.topActiveAccounts, helper),
             ] else
               _buildEmptyStateCard(
                 theme,
                 Icons.supervised_user_circle_outlined,
-                "No Ledger accounts yet",
-                "Add customers or vendors in the Ledger tab to track credits and outstanding balances.",
+                l10n.noLedgerAccountsYet,
+                l10n.addCustomersOrVendorsInTheLedgerTabToTrackCreditsAndOutstandingBalances,
               ),
 
             const SizedBox(height: 30),
@@ -89,9 +91,10 @@ class DashboardTab extends StatelessWidget {
     );
   }
 
-  Widget _buildWelcomeHeader(ThemeData theme, DataProvider provider) {
+  Widget _buildWelcomeHeader(BuildContext context, ThemeData theme, DataProvider provider) {
     final netProfit = provider.netProfit;
     final netColor = netProfit >= 0 ? Colors.green : Colors.red;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -119,7 +122,7 @@ class DashboardTab extends StatelessWidget {
           Row(
             children: [
               Text(
-                "Overview Dashboard",
+                l10n.overviewDashboard,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: theme.brightness == Brightness.dark
@@ -136,7 +139,7 @@ class DashboardTab extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "Net Day Book Balance",
+            l10n.netDayBookBalance,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.brightness == Brightness.dark
                   ? Colors.white54
@@ -156,14 +159,14 @@ class DashboardTab extends StatelessWidget {
             children: [
               _buildMiniHeaderStat(
                 theme,
-                "Receivables (Get)",
+                l10n.receivablesGet,
                 "₹${provider.totalReceivables.toStringAsFixed(1)}",
                 Colors.teal,
               ),
               const SizedBox(width: 16),
               _buildMiniHeaderStat(
                 theme,
-                "Payables (Give)",
+                l10n.payablesGive,
                 "₹${provider.totalPayables.toStringAsFixed(1)}",
                 Colors.deepOrangeAccent,
               ),
@@ -174,11 +177,12 @@ class DashboardTab extends StatelessWidget {
     );
   }
 
-  Widget _buildMonthlySalesComparisonCard(ThemeData theme, DataProvider provider) {
+  Widget _buildMonthlySalesComparisonCard(BuildContext context, ThemeData theme, DataProvider provider) {
     final curSales = provider.currentMonthSalesCategory;
     final prevSales = provider.previousMonthSalesCategory;
     final curTotal = provider.currentMonthSales;
     final prevTotal = provider.previousMonthSales;
+    final l10n = AppLocalizations.of(context)!;
 
     // Calculate growth for category Sales
     double salesGrowth = 0.0;
@@ -218,7 +222,7 @@ class DashboardTab extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    "Sales Comparison (Month-on-Month)",
+                    l10n.salesComparisonMonthonmonth,
                     style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -229,7 +233,7 @@ class DashboardTab extends StatelessWidget {
             const SizedBox(height: 16),
             // Comparison for Sales Category
             Text(
-              "Sales Category",
+              l10n.salesCategory,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: theme.brightness == Brightness.dark ? Colors.white70 : Colors.black87,
@@ -244,7 +248,7 @@ class DashboardTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "This Month",
+                        l10n.thisMonth,
                         style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                       ),
                       const SizedBox(height: 4),
@@ -272,7 +276,7 @@ class DashboardTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Prev Month",
+                        l10n.prevMonth,
                         style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                       ),
                       const SizedBox(height: 4),
@@ -291,7 +295,7 @@ class DashboardTab extends StatelessWidget {
             const Divider(height: 24),
             // Comparison for Total Revenue
             Text(
-              "Total Revenue",
+              l10n.totalRevenue,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: theme.brightness == Brightness.dark ? Colors.white70 : Colors.black87,
@@ -306,7 +310,7 @@ class DashboardTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "This Month",
+                        l10n.thisMonth,
                         style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                       ),
                       const SizedBox(height: 4),
@@ -334,7 +338,7 @@ class DashboardTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Prev Month",
+                        l10n.prevMonth,
                         style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                       ),
                       const SizedBox(height: 4),
@@ -431,11 +435,12 @@ class DashboardTab extends StatelessWidget {
   }
 
   // Bar chart summarizing day-by-day cash flow for the last 7 days
-  Widget _buildPLChartCard(ThemeData theme, List<PLEntry> entries, Helper helper) {
+  Widget _buildPLChartCard(BuildContext context, ThemeData theme, List<PLEntry> entries, Helper helper) {
     final now = DateTime.now();
     final last7Days = List.generate(7, (index) {
       return DateTime(now.year, now.month, now.day).subtract(Duration(days: 6 - index));
     });
+    final l10n = AppLocalizations.of(context)!;
 
     double maxVal = 100.0;
     List<BarChartGroupData> barGroups = [];
@@ -501,13 +506,13 @@ class DashboardTab extends StatelessWidget {
                 const Icon(Icons.bar_chart, color: Colors.blue),
                 const SizedBox(width: 8),
                 Text(
-                  "Cash Flow (Last 7 Days)",
+                  l10n.cashFlowLast7Days,
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
-                _buildLegendItem(Colors.green, "Income"),
+                _buildLegendItem(Colors.green, l10n.income),
                 const SizedBox(width: 8),
-                _buildLegendItem(Colors.red, "Expense"),
+                _buildLegendItem(Colors.red, l10n.expense),
               ],
             ),
             const SizedBox(height: 24),
@@ -587,10 +592,11 @@ class DashboardTab extends StatelessWidget {
   }
 
   // Visual breakdown of Khata/Ledger outstanding balances
-  Widget _buildLedgerOverviewCard(ThemeData theme, DataProvider provider, Helper helper) {
+  Widget _buildLedgerOverviewCard(BuildContext context, ThemeData theme, DataProvider provider, Helper helper) {
     final receivables = provider.totalReceivables;
     final payables = provider.totalPayables;
     final total = receivables + payables;
+    final l10n = AppLocalizations.of(context)!;
 
     double recPercent = 0.5;
     double payPercent = 0.5;
@@ -618,7 +624,7 @@ class DashboardTab extends StatelessWidget {
                 const Icon(Icons.pie_chart, color: Colors.teal),
                 const SizedBox(width: 8),
                 Text(
-                  "Ledger Balance Ratio",
+                  l10n.ledgerBalanceRatio,
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -641,9 +647,9 @@ class DashboardTab extends StatelessWidget {
                             title: receivables > 0 ? '${(recPercent * 100).toStringAsFixed(0)}%' : '',
                             radius: 30,
                             titleStyle: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                             ),
                           ),
                           PieChartSectionData(
@@ -652,9 +658,9 @@ class DashboardTab extends StatelessWidget {
                             title: payables > 0 ? '${(payPercent * 100).toStringAsFixed(0)}%' : '',
                             radius: 30,
                             titleStyle: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                             ),
                           ),
                         ],
@@ -669,14 +675,14 @@ class DashboardTab extends StatelessWidget {
                     children: [
                       _buildIndicatorRow(
                         Colors.teal,
-                        "Outstanding Receivables",
+                        l10n.outstandingReceivables,
                         "₹${receivables.toStringAsFixed(2)}",
                         theme,
                       ),
                       const SizedBox(height: 12),
                       _buildIndicatorRow(
                         Colors.deepOrangeAccent,
-                        "Outstanding Payables",
+                        l10n.outstandingPayables,
                         "₹${payables.toStringAsFixed(2)}",
                         theme,
                       ),
@@ -725,7 +731,8 @@ class DashboardTab extends StatelessWidget {
   }
 
   // Top accounts by transactions or balance
-  Widget _buildTopAccountsCard(ThemeData theme, List<LedgerAccount> accounts, Helper helper) {
+  Widget _buildTopAccountsCard(BuildContext context, ThemeData theme, List<LedgerAccount> accounts, Helper helper) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -744,17 +751,17 @@ class DashboardTab extends StatelessWidget {
                 const Icon(Icons.star_border, color: Colors.amber),
                 const SizedBox(width: 8),
                 Text(
-                  "Top Active Accounts",
+                  l10n.topActiveAccounts,
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             if (accounts.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Center(
-                  child: Text("No transactions recorded yet", style: TextStyle(color: Colors.grey)),
+                  child: Text(l10n.noTransactionsRecordedYet, style: const TextStyle(color: Colors.grey)),
                 ),
               )
             else
@@ -790,7 +797,7 @@ class DashboardTab extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                "${acc.transactions.length} transactions",
+                                "${acc.transactions.length} ${l10n.transactions}",
                                 style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                               ),
                             ],
@@ -805,7 +812,7 @@ class DashboardTab extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              bal >= 0 ? "Receivable" : "Payable",
+                              bal >= 0 ? l10n.receivable : l10n.payable,
                               style: TextStyle(fontSize: 10, color: color.withOpacity(0.8)),
                             ),
                           ],

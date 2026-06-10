@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:dukan_tools/l10n/app_localizations.dart';
 import 'package:dukan_tools/screens/about_us.dart';
 import 'package:dukan_tools/screens/item_details.dart';
 import 'package:dukan_tools/screens/main_navigation_shell.dart';
 import 'package:dukan_tools/services/database_service.dart';
 import 'package:dukan_tools/providers/data_provider.dart';
+import 'package:dukan_tools/providers/locale_provider.dart';
 import 'package:dukan_tools/services/ad_manager.dart';
 
 void main() async {
@@ -25,6 +28,9 @@ void main() async {
         ),
         ChangeNotifierProvider<DataProvider>(
           create: (_) => DataProvider(),
+        ),
+        ChangeNotifierProvider<LocaleProvider>(
+          create: (_) => LocaleProvider(),
         ),
       ],
       child: const MyApp(),
@@ -67,9 +73,21 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
 
     return MaterialApp(
       title: 'Dukan Tools',
+      locale: localeProvider.locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('hi'),
+      ],
       theme: themeProvider.isDarkModeEnabled
           ? ThemeData.dark(useMaterial3: true)
           : ThemeData(
